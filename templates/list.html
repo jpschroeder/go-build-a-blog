@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+{{ template "head.html" .}}
+<body>
+
+<h1>Tumbleweed Technology</h1>
+<p>The random musings of a professional software enginneer that will most likely be read by absolutely noone.</p>
+<p>
+    email: <a href="mailto:contact@schroederspace.com">contact@schroederspace.com</a><br/>
+    github: <a href="https://github.com/jpschroeder">jpschroeder</a>
+</p>
+
+<hr>
+
+{{ range $index, $page := . }}
+    <h2><a href="/{{ $page.Slug }}">{{ $page.Title }}</a></h2>
+    <p class="subtitle">{{ $page.FormattedDate }}</p>
+{{ end }}
+
+</body>
+</html>

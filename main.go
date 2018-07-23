@@ -2,25 +2,34 @@ package main
 
 import (
 	"fmt"
-	"time"
+	"log"
+	"net/http"
 )
 
 func main() {
-	fmt.Println("Hello World")
+	log.Println("Starting Application")
 
 	data := Data{}
 	data.init()
-	//slug := data.create(Page{Title: "Blah bloo asdf", Date: time.Now(), Show: true, Body: "test body"})
-	//fmt.Println(slug)
+	handlers := Handlers{data: data}
+	handlers.init()
+	http.Handle("/", handlers.registerRoutes())
 
-	slug := data.update("blah-bloo", &Page{Title: "Blah bloo", Date: time.Now(), Show: true, Body: "test body updated"})
-	fmt.Println(slug)
+	log.Fatal(http.ListenAndServe(":8080", nil))
 
-	p := data.view(slug)
-	fmt.Printf("%v", p)
+	/*
+		//slug := data.create(Page{Title: "Blah bloo asdf", Date: time.Now(), Show: true, Body: "test body"})
+		//fmt.Println(slug)
 
-	list := data.list()
-	fmt.Printf("%v", list)
+		slug := data.update("blah-bloo", &Page{Title: "Blah bloo", Date: time.Now(), Show: true, Body: "test body updated"})
+		fmt.Println(slug)
+
+		p := data.view(slug)
+		fmt.Printf("%v", p)
+
+		list := data.list()
+		fmt.Printf("%v", list)
+	*/
 
 	fmt.Println("Done")
 }

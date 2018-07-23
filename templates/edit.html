@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+{{ template "head.html" .}}
+<body>
+
+<div class="right"><a href="/">home</a></div>
+
+<form method="POST">
+    <div><input type="text" name="title" value="{{.Title}}" placeholder="Title" /></div>
+    <div>
+        <input type="datetime-local" name="date" value="{{.FormattedDateTime}}" />
+        <input type="checkbox" name="show" {{if .Show}}checked="checked"{{end}} value="1" /> Show in Listing
+    </div>
+    <div>
+	<textarea name="body" placeholder="Body">{{printf "%s" .Body}}</textarea>
+    </div>
+
+	<div><input type="submit" value="Save"></div>
+</form>
+
+</body>
+</html>
