@@ -48,7 +48,10 @@ func (h Handlers) viewHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	body := template.HTML(blackfriday.Run(toUnix(page.Body)))
-	dto := PageDto{FormattedDate: page.FormattedDate(), Title: page.Title, Body: body}
+	dto := PageDto{
+		FormattedDate: page.FormattedDate(),
+		Title:         page.Title,
+		Body:          body}
 
 	return h.tmpl.ExecuteTemplate(w, "view.html", dto)
 }
