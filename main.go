@@ -8,9 +8,14 @@ import (
 func main() {
 	log.Println("Starting Application")
 
+	//hash, _ := hashPassword("xxx")
+	//fmt.Println(hash)
+
 	data := Data{}
 	data.init()
-	handlers := Handlers{data: data}
+	auth := Auth{}
+	auth.init()
+	handlers := Handlers{data: data, auth: auth}
 	handlers.init()
 	http.Handle("/", handlers.registerRoutes())
 

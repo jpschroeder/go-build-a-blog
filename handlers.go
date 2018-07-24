@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"html/template"
 	"log"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 
 type Handlers struct {
 	data Data
+	auth Auth
 	tmpl *template.Template
 }
 
@@ -29,8 +31,8 @@ func (h Handlers) listHandler(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h Handlers) viewHandler(w http.ResponseWriter, r *http.Request) error {
-	vars := mux.Vars(r)
-	slug := vars["slug"]
+	slug := mux.Vars(r)["slug"]
+
 	page, err := h.data.view(slug)
 	if err != nil {
 		return err
@@ -40,11 +42,6 @@ func (h Handlers) viewHandler(w http.ResponseWriter, r *http.Request) error {
 		FormattedDate string
 		Title         string
 		Body          template.HTML
-	}
-
-	toUnix := func(body []byte) []byte {
-		r := regexp.MustCompile(`\r`)
-		return r.ReplaceAll(body, []byte{})
 	}
 
 	body := template.HTML(blackfriday.Run(toUnix(page.Body)))
@@ -61,19 +58,11 @@ func (h Handlers) addHandler(w http.ResponseWriter, r *http.Request) error {
 	return h.tmpl.ExecuteTemplate(w, "edit.html", page)
 }
 
-func parseForm(r *http.Request) (*Page, error) {
-	date, err := time.Parse(dateTimeFormat, r.FormValue("date"))
-	if err != nil {
-		return nil, err
-	}
-	return &Page{
-		Date:  date,
-		Title: r.FormValue("title"),
-		Body:  []byte(r.FormValue("body")),
-		Show:  r.FormValue("show") == "1"}, nil
-}
-
 func (h Handlers) createHandler(w http.ResponseWriter, r *http.Request) error {
+	if !h.auth.checkPassword(r.FormValue("key")) {
+		return errors.New("invalid key")
+	}
+
 	page, err1 := parseForm(r)
 	if err1 != nil {
 		return err1
@@ -87,8 +76,7 @@ func (h Handlers) createHandler(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h Handlers) editHandler(w http.ResponseWriter, r *http.Request) error {
-	vars := mux.Vars(r)
-	slug := vars["slug"]
+	slug := mux.Vars(r)["slug"]
 	page, err := h.data.view(slug)
 	if err != nil {
 		return err
@@ -97,8 +85,12 @@ func (h Handlers) editHandler(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h Handlers) updateHandler(w http.ResponseWriter, r *http.Request) error {
-	vars := mux.Vars(r)
-	oldSlug := vars["slug"]
+	if !h.auth.checkPassword(r.FormValue("key")) {
+		return errors.New("invalid key")
+	}
+
+	oldSlug := mux.Vars(r)["slug"]
+
 	page, err1 := parseForm(r)
 	if err1 != nil {
 		return err1
@@ -116,14 +108,39 @@ func (h Handlers) updateHandler(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h Handlers) deleteHandler(w http.ResponseWriter, r *http.Request) error {
-	vars := mux.Vars(r)
-	slug := vars["slug"]
+	var i interface{}
+	return h.tmpl.ExecuteTemplate(w, "delete.html", i)
+}
+
+func (h Handlers) deleteConfirmHandler(w http.ResponseWriter, r *http.Request) error {
+	if !h.auth.checkPassword(r.FormValue("key")) {
+		return errors.New("invalid key")
+	}
+
+	slug := mux.Vars(r)["slug"]
 	err := h.data.delete(slug)
 	if err != nil {
 		return err
 	}
 	http.Redirect(w, r, "/", http.StatusFound)
 	return nil
+}
+
+func toUnix(body []byte) []byte {
+	r := regexp.MustCompile(`\r`)
+	return r.ReplaceAll(body, []byte{})
+}
+
+func parseForm(r *http.Request) (*Page, error) {
+	date, err := time.Parse(dateTimeFormat, r.FormValue("date"))
+	if err != nil {
+		return nil, err
+	}
+	return &Page{
+		Date:  date,
+		Title: r.FormValue("title"),
+		Body:  []byte(r.FormValue("body")),
+		Show:  r.FormValue("show") == "1"}, nil
 }
 
 type errorHandler func(http.ResponseWriter, *http.Request) error
@@ -143,9 +160,11 @@ func (h Handlers) registerRoutes() *mux.Router {
 	r.HandleFunc("/", makeHandler(h.listHandler)).Methods("GET")
 	r.HandleFunc("/add", makeHandler(h.addHandler)).Methods("GET")
 	r.HandleFunc("/add", makeHandler(h.createHandler)).Methods("POST")
-	r.HandleFunc("/{slug:[a-z0-9-]+}", makeHandler(h.viewHandler)).Methods("GET")
-	r.HandleFunc("/{slug:[a-z0-9-]+}/edit", makeHandler(h.editHandler)).Methods("GET")
-	r.HandleFunc("/{slug:[a-z0-9-]+}/edit", makeHandler(h.updateHandler)).Methods("POST")
-	r.HandleFunc("/{slug:[a-z0-9-]+}/delete", makeHandler(h.deleteHandler)).Methods("GET")
+	slugUrl := "/{slug:[a-z0-9-]+}"
+	r.HandleFunc(slugUrl, makeHandler(h.viewHandler)).Methods("GET")
+	r.HandleFunc(slugUrl+"/edit", makeHandler(h.editHandler)).Methods("GET")
+	r.HandleFunc(slugUrl+"/edit", makeHandler(h.updateHandler)).Methods("POST")
+	r.HandleFunc(slugUrl+"/delete", makeHandler(h.deleteHandler)).Methods("GET")
+	r.HandleFunc(slugUrl+"/delete", makeHandler(h.deleteConfirmHandler)).Methods("POST")
 	return r
 }

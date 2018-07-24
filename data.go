@@ -74,7 +74,7 @@ func (r *Data) init() error {
 func (r Data) list() ([]PageListing, error) {
 	var ret []PageListing
 	sql := `
-		select Slug, Title, Date from pages order by Date desc
+		select Slug, Title, Date from pages where Show = 1 order by Date desc
 	`
 	rows, err := r.db.Query(sql)
 	if err != nil {
