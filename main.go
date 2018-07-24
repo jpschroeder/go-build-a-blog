@@ -11,13 +11,12 @@ func main() {
 	//hash, _ := hashPassword("xxx")
 	//fmt.Println(hash)
 
-	data := Data{}
-	data.init()
-	auth := Auth{}
-	auth.init()
-	handlers := Handlers{data: data, auth: auth}
-	handlers.init()
-	http.Handle("/", handlers.registerRoutes())
+	s, err := initServer()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	http.Handle("/", s.registerRoutes())
 
 	log.Println("Listening on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
