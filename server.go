@@ -1,14 +1,10 @@
 package main
 
 import (
-	"bufio"
 	"database/sql"
-	"fmt"
 	"html/template"
-	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -18,11 +14,6 @@ import (
 type Server struct {
 	db   *sql.DB
 	tmpl *template.Template
-	hash string
-}
-
-func (s Server) checkPassword(password string) bool {
-	return checkPasswordHash(password, s.hash)
 }
 
 func parseTemplates() (*template.Template, error) {
@@ -44,56 +35,37 @@ func createSchema(db *sql.DB) error {
 			Body text null
 		);
 		create unique index if not exists idx_pages_slug on pages(Slug);
+		create table if not exists config (
+			ConfigId integer primary key autoincrement,
+			KeyHash varchar(128) not null
+		);
 	`
 	_, err := db.Exec(sql)
 	return err
 }
 
-func readHash() (string, error) {
-	authFile := "hash.db"
-	storedhash, err1 := ioutil.ReadFile(authFile)
-	if err1 == nil {
-		// auth file exists
-		return string(storedhash), nil
-	} else {
-		// auth file doesn't exist
-		reader := bufio.NewReader(os.Stdin)
-		fmt.Println("Enter key: ")
-		key, err2 := reader.ReadString('\n')
-		if err2 != nil {
-			return "", err2
-		}
-		key = stripChar(stripChar(key, `\n`), `\r`)
-		enteredhash, err3 := hashPassword(key)
-		if err3 != nil {
-			return "", err3
-		}
-		ioutil.WriteFile(authFile, []byte(enteredhash), 0644)
-		return enteredhash, nil
-	}
-}
-
 func initServer() (Server, error) {
-	db, err1 := openDb()
-	if err1 != nil {
-		return Server{}, err1
+	db, err := openDb()
+	if err != nil {
+		return Server{}, err
 	}
-	err2 := createSchema(db)
-	if err2 != nil {
-		return Server{}, err2
+	tmpl, err := parseTemplates()
+	if err != nil {
+		return Server{}, err
 	}
-	hash, err3 := readHash()
-	if err3 != nil {
-		return Server{}, err3
+	err = createSchema(db)
+	if err != nil {
+		return Server{}, err
 	}
-	tmpl, err4 := parseTemplates()
-	if err4 != nil {
-		return Server{}, err4
+
+	s := Server{db: db, tmpl: tmpl}
+
+	err = s.ensureHashExists()
+	if err != nil {
+		return Server{}, err
 	}
-	return Server{
-		db:   db,
-		tmpl: tmpl,
-		hash: hash}, nil
+
+	return s, nil
 }
 
 func parseForm(r *http.Request) (*Page, error) {

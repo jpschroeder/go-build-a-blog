@@ -13,7 +13,7 @@ func (s Server) deleteHandler(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (s Server) deleteConfirmHandler(w http.ResponseWriter, r *http.Request) error {
-	if !s.checkPassword(r.FormValue("key")) {
+	if !s.verifyKey(r.FormValue("key")) {
 		return errors.New("invalid key")
 	}
 

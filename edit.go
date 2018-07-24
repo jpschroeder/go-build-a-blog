@@ -18,7 +18,7 @@ func (s Server) editHandler(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (s Server) updateHandler(w http.ResponseWriter, r *http.Request) error {
-	if !s.checkPassword(r.FormValue("key")) {
+	if !s.verifyKey(r.FormValue("key")) {
 		return errors.New("invalid key")
 	}
 
