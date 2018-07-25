@@ -32,7 +32,7 @@ func (s Server) ensureHashExists() error {
 
 func (s Server) hashExists() bool {
 	hash, err := s.hashQuery()
-	return err != nil && len(hash) > 0
+	return err == nil && len(hash) > 0
 }
 
 func (s Server) hashQuery() (string, error) {
@@ -55,6 +55,14 @@ func (s Server) updateHashCommand(hash string) error {
 		on conflict(ConfigId) do update set KeyHash=?
 	`
 	_, err := s.db.Exec(sql, hash, hash)
+	return err
+}
+
+func (s Server) deleteHashCommand() error {
+	sql := `
+		delete from config
+	`
+	_, err := s.db.Exec(sql)
 	return err
 }
 

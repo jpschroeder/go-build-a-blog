@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 )
@@ -8,10 +9,10 @@ import (
 func main() {
 	log.Println("Starting Application")
 
-	//hash, _ := hashPassword("xxx")
-	//fmt.Println(hash)
+	reset := flag.Bool("reset", false, "reset the key")
+	flag.Parse()
 
-	s, err := initServer()
+	s, err := initServer(*reset)
 	if err != nil {
 		log.Fatal(err)
 	}

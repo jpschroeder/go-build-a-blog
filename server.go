@@ -44,7 +44,7 @@ func createSchema(db *sql.DB) error {
 	return err
 }
 
-func initServer() (Server, error) {
+func initServer(resetHash bool) (Server, error) {
 	db, err := openDb()
 	if err != nil {
 		return Server{}, err
@@ -59,6 +59,10 @@ func initServer() (Server, error) {
 	}
 
 	s := Server{db: db, tmpl: tmpl}
+
+	if resetHash {
+		s.deleteHashCommand()
+	}
 
 	err = s.ensureHashExists()
 	if err != nil {
