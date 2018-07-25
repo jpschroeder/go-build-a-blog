@@ -2,21 +2,22 @@ package main
 
 import (
 	"bufio"
+	"database/sql"
 	"errors"
 	"fmt"
 	"os"
 )
 
-func (s Server) verifyKey(key string) bool {
-	hash, err := s.hashQuery()
+func verifyKey(db *sql.DB, key string) bool {
+	hash, err := GetHashQuery(db)
 	if err != nil {
 		return false
 	}
 	return verifyHash(key, hash)
 }
 
-func (s Server) ensureHashExists() error {
-	if s.hashExists() {
+func ensureHashExists(db *sql.DB) error {
+	if HashExistsQuery(db) {
 		return nil
 	}
 	key, err := promptForKey()
@@ -27,19 +28,19 @@ func (s Server) ensureHashExists() error {
 	if err != nil {
 		return err
 	}
-	return s.updateHashCommand(hash)
+	return UpdateHashCommand(db, hash)
 }
 
-func (s Server) hashExists() bool {
-	hash, err := s.hashQuery()
+func HashExistsQuery(db *sql.DB) bool {
+	hash, err := GetHashQuery(db)
 	return err == nil && len(hash) > 0
 }
 
-func (s Server) hashQuery() (string, error) {
+func GetHashQuery(db *sql.DB) (string, error) {
 	sql := `
 		select KeyHash from config order by ConfigId desc
 	`
-	row := s.db.QueryRow(sql)
+	row := db.QueryRow(sql)
 
 	var hash string
 	err := row.Scan(&hash)
@@ -49,20 +50,20 @@ func (s Server) hashQuery() (string, error) {
 	return hash, err
 }
 
-func (s Server) updateHashCommand(hash string) error {
+func UpdateHashCommand(db *sql.DB, hash string) error {
 	sql := `
 		insert into config(ConfigId, KeyHash) values(1, ?)
 		on conflict(ConfigId) do update set KeyHash=?
 	`
-	_, err := s.db.Exec(sql, hash, hash)
+	_, err := db.Exec(sql, hash, hash)
 	return err
 }
 
-func (s Server) deleteHashCommand() error {
+func DeleteHashCommand(db *sql.DB) error {
 	sql := `
 		delete from config
 	`
-	_, err := s.db.Exec(sql)
+	_, err := db.Exec(sql)
 	return err
 }
 

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"database/sql"
+	"html/template"
 	"net/http"
 	"time"
 )
@@ -15,20 +17,22 @@ func (p PageListing) FormattedDate() string {
 	return p.Date.Format(dateFormat)
 }
 
-func (s Server) listHandler(w http.ResponseWriter, r *http.Request) error {
-	pages, err := s.listQuery()
-	if err != nil {
-		return err
-	}
-	return s.tmpl.ExecuteTemplate(w, "list.html", pages)
+func ListPagesHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
+	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
+		pages, err := ListPagesQuery(db)
+		if err != nil {
+			return err
+		}
+		return tmpl.ExecuteTemplate(w, "list.html", pages)
+	})
 }
 
-func (s Server) listQuery() ([]PageListing, error) {
+func ListPagesQuery(db *sql.DB) ([]PageListing, error) {
 	var ret []PageListing
 	sql := `
 		select Slug, Title, Date from pages where Show = 1 order by Date desc
 	`
-	rows, err := s.db.Query(sql)
+	rows, err := db.Query(sql)
 	if err != nil {
 		return ret, err
 	}

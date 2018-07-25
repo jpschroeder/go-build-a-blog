@@ -3,7 +3,9 @@ package main
 import (
 	"regexp"
 
+	"github.com/avelino/slugify"
 	"golang.org/x/crypto/bcrypt"
+	blackfriday "gopkg.in/russross/blackfriday.v2"
 )
 
 const dateFormat = "2006-01-02"
@@ -17,6 +19,14 @@ func createHash(password string) (string, error) {
 func verifyHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
+}
+
+func makeSlug(input string) string {
+	return slugify.Slugify(input)
+}
+
+func parseMarkdown(input []byte) []byte {
+	return blackfriday.Run(toUnix(input))
 }
 
 func stripChar(body string, char string) string {

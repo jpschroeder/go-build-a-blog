@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"errors"
 	"html/template"
 	"log"
 	"net/http"
@@ -10,11 +11,6 @@ import (
 	"github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
 )
-
-type Server struct {
-	db   *sql.DB
-	tmpl *template.Template
-}
 
 func parseTemplates() (*template.Template, error) {
 	return template.ParseGlob("templates/*.html")
@@ -44,32 +40,27 @@ func createSchema(db *sql.DB) error {
 	return err
 }
 
-func initServer(resetHash bool) (Server, error) {
+func initDb(resetHash bool) (*sql.DB, error) {
 	db, err := openDb()
 	if err != nil {
-		return Server{}, err
+		return nil, err
 	}
-	tmpl, err := parseTemplates()
-	if err != nil {
-		return Server{}, err
-	}
+
 	err = createSchema(db)
 	if err != nil {
-		return Server{}, err
+		return nil, err
 	}
-
-	s := Server{db: db, tmpl: tmpl}
 
 	if resetHash {
-		s.deleteHashCommand()
+		DeleteHashCommand(db)
 	}
 
-	err = s.ensureHashExists()
+	err = ensureHashExists(db)
 	if err != nil {
-		return Server{}, err
+		return nil, err
 	}
 
-	return s, nil
+	return db, nil
 }
 
 func parseForm(r *http.Request) (*Page, error) {
@@ -84,9 +75,9 @@ func parseForm(r *http.Request) (*Page, error) {
 		Show:  r.FormValue("show") == "1"}, nil
 }
 
-type errorHandler func(http.ResponseWriter, *http.Request) error
+type handlerFunc func(http.ResponseWriter, *http.Request) error
 
-func makeHandler(fn errorHandler) http.HandlerFunc {
+func handleErrors(fn handlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := fn(w, r)
 		if err != nil {
@@ -96,16 +87,25 @@ func makeHandler(fn errorHandler) http.HandlerFunc {
 	}
 }
 
-func (s Server) registerRoutes() *mux.Router {
+func requireKey(db *sql.DB, fn handlerFunc) handlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) error {
+		if !verifyKey(db, r.FormValue("key")) {
+			return errors.New("invalid key")
+		}
+		return fn(w, r)
+	}
+}
+
+func registerRoutes(db *sql.DB, tmpl *template.Template) *mux.Router {
 	r := mux.NewRouter()
-	r.HandleFunc("/", makeHandler(s.listHandler)).Methods("GET")
-	r.HandleFunc("/add", makeHandler(s.addHandler)).Methods("GET")
-	r.HandleFunc("/add", makeHandler(s.createHandler)).Methods("POST")
+	r.HandleFunc("/", ListPagesHandler(db, tmpl)).Methods("GET")
+	r.HandleFunc("/add", AddPageHandler(tmpl)).Methods("GET")
+	r.HandleFunc("/add", CreatePageHandler(db)).Methods("POST")
 	slugUrl := "/{slug:[a-z0-9-]+}"
-	r.HandleFunc(slugUrl, makeHandler(s.viewHandler)).Methods("GET")
-	r.HandleFunc(slugUrl+"/edit", makeHandler(s.editHandler)).Methods("GET")
-	r.HandleFunc(slugUrl+"/edit", makeHandler(s.updateHandler)).Methods("POST")
-	r.HandleFunc(slugUrl+"/delete", makeHandler(s.deleteHandler)).Methods("GET")
-	r.HandleFunc(slugUrl+"/delete", makeHandler(s.deleteConfirmHandler)).Methods("POST")
+	r.HandleFunc(slugUrl, ViewPageHandler(db, tmpl)).Methods("GET")
+	r.HandleFunc(slugUrl+"/edit", EditPageHandler(db, tmpl)).Methods("GET")
+	r.HandleFunc(slugUrl+"/edit", UpdatePageHandler(db, tmpl)).Methods("POST")
+	r.HandleFunc(slugUrl+"/delete", DeletePageHandler(tmpl)).Methods("GET")
+	r.HandleFunc(slugUrl+"/delete", DeletePageConfirmHandler(db)).Methods("POST")
 	return r
 }
