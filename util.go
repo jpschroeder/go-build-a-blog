@@ -57,6 +57,7 @@ type Page struct {
 	Show  bool
 	Title string
 	Body  []byte
+	Html  []byte
 }
 
 func (p Page) FormattedDate() string {

@@ -51,11 +51,12 @@ func UpdatePageHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 func UpdatePageCommand(db *sql.DB, oldSlug string, p *Page) (string, error) {
 	sql := `
 		update pages
-		set Slug = ?, Date = ?, Show = ?, Title = ?, Body = ?
+		set Slug = ?, Date = ?, Show = ?, Title = ?, Body = ?, Html = ?
 		where Slug = ?
 	`
 	slug := makeSlug(p.Title)
-	_, err := db.Exec(sql, slug, p.Date, p.Show, p.Title, p.Body, oldSlug)
+	html := parseMarkdown(p.Body)
+	_, err := db.Exec(sql, slug, p.Date, p.Show, p.Title, p.Body, html, oldSlug)
 	if err != nil {
 		return "", err
 	}

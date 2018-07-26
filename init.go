@@ -27,7 +27,8 @@ func createSchema(db *sql.DB) error {
 			Date datetime not null,
 			Show integer not null,
 			Title varchar(64) not null,
-			Body text null
+			Body text null,
+			Html text null
 		);
 		create unique index if not exists idx_pages_slug on pages(Slug);
 		create table if not exists config (

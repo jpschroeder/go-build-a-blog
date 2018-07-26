@@ -41,10 +41,11 @@ func CreatePageHandler(db *sql.DB) http.HandlerFunc {
 // Insert a new page into the database
 func CreatePageCommand(db *sql.DB, p *Page) (string, error) {
 	sql := `
-		insert into pages(Slug, Date, Show, Title, Body) values(?, ?, ?, ?, ?)
+		insert into pages(Slug, Date, Show, Title, Body, Html) values(?, ?, ?, ?, ?, ?)
 	`
 	slug := makeSlug(p.Title)
-	_, err := db.Exec(sql, slug, p.Date, p.Show, p.Title, p.Body)
+	html := parseMarkdown(p.Body)
+	_, err := db.Exec(sql, slug, p.Date, p.Show, p.Title, p.Body, html)
 	if err != nil {
 		return "", err
 	}
