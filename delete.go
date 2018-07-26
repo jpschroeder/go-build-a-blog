@@ -9,6 +9,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// Get handler to render the delete page
 func DeletePageHandler(tmpl *template.Template) http.HandlerFunc {
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
 		var i interface{}
@@ -16,9 +17,10 @@ func DeletePageHandler(tmpl *template.Template) http.HandlerFunc {
 	})
 }
 
+// Post handler to actually delete a page
 func DeletePageConfirmHandler(db *sql.DB) http.HandlerFunc {
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
-		if !verifyKey(db, r.FormValue("key")) {
+		if !VerifyKey(db, r.FormValue("key")) {
 			return errors.New("invalid key")
 		}
 
@@ -32,6 +34,7 @@ func DeletePageConfirmHandler(db *sql.DB) http.HandlerFunc {
 	})
 }
 
+// Delete a page from the database
 func DeletePageCommand(db *sql.DB, slug string) error {
 	sql := `
 		delete from pages where Slug = ?

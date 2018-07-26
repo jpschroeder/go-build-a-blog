@@ -2,24 +2,23 @@ package main
 
 import (
 	"database/sql"
-	"errors"
 	"html/template"
-	"log"
-	"net/http"
-	"time"
 
 	"github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
 )
 
+// Parse all of the html templates so that they can be rendered with data
 func parseTemplates() (*template.Template, error) {
 	return template.ParseGlob("templates/*.html")
 }
 
+// Open and return the sqlite database file
 func openDb() (*sql.DB, error) {
 	return sql.Open("sqlite3", "data.db")
 }
 
+// Create the schema in the database if it doesn't already exist
 func createSchema(db *sql.DB) error {
 	sql := `
 		create table if not exists pages (
@@ -40,7 +39,8 @@ func createSchema(db *sql.DB) error {
 	return err
 }
 
-func initDb(resetHash bool) (*sql.DB, error) {
+// Open the database and create its schema
+func initDb() (*sql.DB, error) {
 	db, err := openDb()
 	if err != nil {
 		return nil, err
@@ -51,51 +51,10 @@ func initDb(resetHash bool) (*sql.DB, error) {
 		return nil, err
 	}
 
-	if resetHash {
-		DeleteHashCommand(db)
-	}
-
-	err = ensureHashExists(db)
-	if err != nil {
-		return nil, err
-	}
-
 	return db, nil
 }
 
-func parseForm(r *http.Request) (*Page, error) {
-	date, err := time.Parse(dateTimeFormat, r.FormValue("date"))
-	if err != nil {
-		return nil, err
-	}
-	return &Page{
-		Date:  date,
-		Title: r.FormValue("title"),
-		Body:  []byte(r.FormValue("body")),
-		Show:  r.FormValue("show") == "1"}, nil
-}
-
-type handlerFunc func(http.ResponseWriter, *http.Request) error
-
-func handleErrors(fn handlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		err := fn(w, r)
-		if err != nil {
-			log.Println(err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	}
-}
-
-func requireKey(db *sql.DB, fn handlerFunc) handlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) error {
-		if !verifyKey(db, r.FormValue("key")) {
-			return errors.New("invalid key")
-		}
-		return fn(w, r)
-	}
-}
-
+// Return a router than has all of the handlers registered
 func registerRoutes(db *sql.DB, tmpl *template.Template) *mux.Router {
 	r := mux.NewRouter()
 	r.HandleFunc("/", ListPagesHandler(db, tmpl)).Methods("GET")

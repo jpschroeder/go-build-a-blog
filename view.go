@@ -9,34 +9,19 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type Page struct {
-	Date  time.Time
-	Show  bool
-	Title string
-	Body  []byte
-}
-
-func (p Page) FormattedDate() string {
-	return p.Date.Format(dateFormat)
-}
-
-func (p Page) FormattedDateTime() string {
-	return p.Date.Format(dateTimeFormat)
-}
-
+// A get handler to view the html of a page
 func ViewPageHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
+	type PageDto struct {
+		FormattedDate string
+		Title         string
+		Body          template.HTML
+	}
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
 		slug := mux.Vars(r)["slug"]
 
 		page, err := ViewPageQuery(db, slug)
 		if err != nil {
 			return err
-		}
-
-		type PageDto struct {
-			FormattedDate string
-			Title         string
-			Body          template.HTML
 		}
 
 		body := template.HTML(parseMarkdown(page.Body))
@@ -49,6 +34,7 @@ func ViewPageHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 	})
 }
 
+// Get the full page data from the database
 func ViewPageQuery(db *sql.DB, slug string) (*Page, error) {
 	sql := `
 		select Date, Show, Title, Body from pages where Slug = ?

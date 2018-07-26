@@ -8,6 +8,7 @@ import (
 	"time"
 )
 
+// Get handler to render the edit page with empty data
 func AddPageHandler(tmpl *template.Template) http.HandlerFunc {
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
 		page := Page{Date: time.Now(), Title: "", Body: make([]byte, 0), Show: true}
@@ -15,25 +16,29 @@ func AddPageHandler(tmpl *template.Template) http.HandlerFunc {
 	})
 }
 
+// Post handler to save a new page
 func CreatePageHandler(db *sql.DB) http.HandlerFunc {
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
-		if !verifyKey(db, r.FormValue("key")) {
+		if !VerifyKey(db, r.FormValue("key")) {
 			return errors.New("invalid key")
 		}
 
-		page, err1 := parseForm(r)
-		if err1 != nil {
-			return err1
+		page, err := parseForm(r)
+		if err != nil {
+			return err
 		}
-		slug, err2 := CreatePageCommand(db, page)
-		if err2 != nil {
-			return err2
+
+		slug, err := CreatePageCommand(db, page)
+		if err != nil {
+			return err
 		}
+
 		http.Redirect(w, r, "/"+slug+"/edit", http.StatusFound)
 		return nil
 	})
 }
 
+// Insert a new page into the database
 func CreatePageCommand(db *sql.DB, p *Page) (string, error) {
 	sql := `
 		insert into pages(Slug, Date, Show, Title, Body) values(?, ?, ?, ?, ?)

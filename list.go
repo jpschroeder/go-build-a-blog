@@ -17,6 +17,7 @@ func (p PageListing) FormattedDate() string {
 	return p.Date.Format(dateFormat)
 }
 
+// Get handler to display a list of pages to be used as an index
 func ListPagesHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
 		pages, err := ListPagesQuery(db)
@@ -27,6 +28,7 @@ func ListPagesHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 	})
 }
 
+// Query the database for the list of page titles and metadata
 func ListPagesQuery(db *sql.DB) ([]PageListing, error) {
 	var ret []PageListing
 	sql := `
