@@ -10,17 +10,23 @@ import (
 func main() {
 	log.Println("Starting Application")
 
-	// Accept a command line flag -reset
+	// Accept a command line flag "-reset"
 	// This flag allows you to change the key needed to edit/delete posts
-	reset := flag.Bool("reset", false, "reset the key used to edit/delete")
-	// Accept a command line flag -addr :8080
+	reset := flag.Bool("reset", false, "reset the security key used to edit/delete\n")
+	// Accept a command line flag "-addr :8080"
 	// This flag tells the server the address to listen on
-	addr := flag.String("addr", ":8080", "the address to listen on (ex localhost:8080)")
+	addr := flag.String("addr", "localhost:8080", "the address/port to listen on \nuse :<port> to listen on all addresses\n")
+	// Accept a command line flag "-templates ./templates"
+	// This flag tells the server the path to the templates folder
+	tmplPath := flag.String("tmpl", "templates", "the path to the templates folder \nfound in the src repository\n")
+	// Accept a command line flag "-db ./data.db"
+	// This flag tells the server the path to the sqlite database file
+	dbFile := flag.String("db", "data.db", "the path to the sqlite database file \nit will be created if it does not already exist\n")
 
 	flag.Parse()
 
 	// Connect to the sqlite database and make sure the schema exists
-	db, err := initDb()
+	db, err := initDb(*dbFile)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -32,7 +38,7 @@ func main() {
 	EnsureHashExists(db)
 
 	// Parse any html templates used by the application
-	tmpl, err := parseTemplates()
+	tmpl, err := parseTemplates(*tmplPath)
 	if err != nil {
 		log.Fatal(err)
 	}

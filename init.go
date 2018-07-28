@@ -3,19 +3,20 @@ package main
 import (
 	"database/sql"
 	"html/template"
+	"path"
 
 	"github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 // Parse all of the html templates so that they can be rendered with data
-func parseTemplates() (*template.Template, error) {
-	return template.ParseGlob("templates/*.html")
+func parseTemplates(tmplPath string) (*template.Template, error) {
+	return template.ParseGlob(path.Join(tmplPath, "*.html"))
 }
 
 // Open and return the sqlite database file
-func openDb() (*sql.DB, error) {
-	return sql.Open("sqlite3", "data.db")
+func openDb(dbPath string) (*sql.DB, error) {
+	return sql.Open("sqlite3", dbPath)
 }
 
 // Create the schema in the database if it doesn't already exist
@@ -41,8 +42,8 @@ func createSchema(db *sql.DB) error {
 }
 
 // Open the database and create its schema
-func initDb() (*sql.DB, error) {
-	db, err := openDb()
+func initDb(dbPath string) (*sql.DB, error) {
+	db, err := openDb(dbPath)
 	if err != nil {
 		return nil, err
 	}
