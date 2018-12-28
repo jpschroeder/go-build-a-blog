@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/avelino/slugify"
+	"github.com/russross/blackfriday"
 	"golang.org/x/crypto/bcrypt"
-	blackfriday "gopkg.in/russross/blackfriday.v2"
 )
 
 const (
