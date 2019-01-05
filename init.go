@@ -31,11 +31,20 @@ func createSchema(db *sql.DB) error {
 			Body text null,
 			Html text null
 		);
+
 		create unique index if not exists idx_pages_slug on pages(Slug);
-		create table if not exists config (
-			ConfigId integer primary key autoincrement,
-			KeyHash varchar(128) not null
+		
+		create table if not exists blogs (
+			BlogId integer primary key autoincrement,
+			Slug varchar(64) not null,
+			KeyHash varchar(128) not null,
+			IsDefault integer not null,
+			Title varchar(64) not null,
+			Body text null,
+			Html test null
 		);
+
+		create unique index if not exists idx_blogs_slug on blogs(Slug);
 	`
 	_, err := db.Exec(sql)
 	return err

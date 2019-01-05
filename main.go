@@ -31,11 +31,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Optionally clear out the old edit key and ask the user for a new one
+	EnsureDefaultBlogExists(db)
+
+	// Optionally clear out the old default key and ask the user for a new one
 	if *reset {
-		DeleteHashCommand(db)
+		ResetDefaultBlogKey(db)
 	}
-	EnsureHashExists(db)
 
 	// Parse any html templates used by the application
 	tmpl, err := parseTemplates(*tmplPath)
