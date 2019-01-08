@@ -17,9 +17,10 @@ func ViewPageHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 		Html          template.HTML
 	}
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
-		slug := mux.Vars(r)["slug"]
+		blogslug := mux.Vars(r)["blogslug"]
+		pageslug := mux.Vars(r)["pageslug"]
 
-		page, err := ViewPageQuery(db, slug)
+		page, err := ViewPageQuery(db, blogslug, pageslug)
 		if err != nil {
 			return err
 		}
@@ -29,16 +30,19 @@ func ViewPageHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 			Title:         page.Title,
 			Html:          template.HTML(page.Html)}
 
-		return tmpl.ExecuteTemplate(w, "view.html", dto)
+		return tmpl.ExecuteTemplate(w, "viewpage.html", dto)
 	})
 }
 
 // Get the full page data from the database
-func ViewPageQuery(db *sql.DB, slug string) (*Page, error) {
+func ViewPageQuery(db *sql.DB, blogslug string, pageslug string) (*Page, error) {
 	sql := `
-		select Date, Show, Title, Body, Html from pages where Slug = ?
+		select p.Date, p.Show, p.Title, p.Body, p.Html 
+		from pages as p
+		inner join blogs as b on p.BlogId = b.BlogId
+		where b.Slug = ? and p.Slug = ?
 	`
-	row := db.QueryRow(sql, slug)
+	row := db.QueryRow(sql, blogslug, pageslug)
 
 	var date time.Time
 	var show bool

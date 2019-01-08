@@ -26,11 +26,13 @@ func main() {
 	flag.Parse()
 
 	// Connect to the sqlite database and make sure the schema exists
+	log.Println("Initialize Database")
 	db, err := initDb(*dbFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	log.Println("Ensure Default Data Exists")
 	EnsureDefaultBlogExists(db)
 
 	// Optionally clear out the old default key and ask the user for a new one
@@ -45,6 +47,7 @@ func main() {
 	}
 
 	// Register all of the routing handlers
+	log.Println("Register Routes")
 	http.Handle("/", registerRoutes(db, tmpl))
 
 	// Start the application server

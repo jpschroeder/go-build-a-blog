@@ -22,18 +22,6 @@ func openDb(dbPath string) (*sql.DB, error) {
 // Create the schema in the database if it doesn't already exist
 func createSchema(db *sql.DB) error {
 	sql := `
-		create table if not exists pages (
-			PageId integer primary key autoincrement,
-			Slug varchar(64) not null,
-			Date datetime not null,
-			Show integer not null,
-			Title varchar(64) not null,
-			Body text null,
-			Html text null
-		);
-
-		create unique index if not exists idx_pages_slug on pages(Slug);
-		
 		create table if not exists blogs (
 			BlogId integer primary key autoincrement,
 			Slug varchar(64) not null,
@@ -45,6 +33,19 @@ func createSchema(db *sql.DB) error {
 		);
 
 		create unique index if not exists idx_blogs_slug on blogs(Slug);
+
+		create table if not exists pages (
+			PageId integer primary key autoincrement,
+			BlogId integer REFERENCES blogs(BlogId),
+			Slug varchar(64) not null,
+			Date datetime not null,
+			Show integer not null,
+			Title varchar(64) not null,
+			Body text null,
+			Html text null
+		);
+
+		create unique index if not exists idx_pages_slug on pages(Slug);
 	`
 	_, err := db.Exec(sql)
 	return err
@@ -67,15 +68,20 @@ func initDb(dbPath string) (*sql.DB, error) {
 
 // Return a router than has all of the handlers registered
 func registerRoutes(db *sql.DB, tmpl *template.Template) *mux.Router {
+	blogSlug := "/{blogslug:[a-z0-9-]+}"
+	pageSlug := "/{pageslug:[a-z0-9-]+}"
+
 	r := mux.NewRouter()
-	r.HandleFunc("/", ListPagesHandler(db, tmpl)).Methods("GET")
-	r.HandleFunc("/add", AddPageHandler(tmpl)).Methods("GET")
-	r.HandleFunc("/add", CreatePageHandler(db)).Methods("POST")
-	slugUrl := "/{slug:[a-z0-9-]+}"
-	r.HandleFunc(slugUrl, ViewPageHandler(db, tmpl)).Methods("GET")
-	r.HandleFunc(slugUrl+"/edit", EditPageHandler(db, tmpl)).Methods("GET")
-	r.HandleFunc(slugUrl+"/edit", UpdatePageHandler(db, tmpl)).Methods("POST")
-	r.HandleFunc(slugUrl+"/delete", DeletePageHandler(tmpl)).Methods("GET")
-	r.HandleFunc(slugUrl+"/delete", DeletePageConfirmHandler(db)).Methods("POST")
+	r.HandleFunc("/", DefaultBlogHandler(db, tmpl)).Methods("GET")
+
+	r.HandleFunc(blogSlug, ViewBlogHandler(db, tmpl)).Methods("GET")
+	r.HandleFunc(blogSlug+"/add", AddPageHandler(tmpl)).Methods("GET")
+	r.HandleFunc(blogSlug+"/add", CreatePageHandler(db)).Methods("POST")
+
+	r.HandleFunc(blogSlug+pageSlug, ViewPageHandler(db, tmpl)).Methods("GET")
+	r.HandleFunc(blogSlug+pageSlug+"/edit", EditPageHandler(db, tmpl)).Methods("GET")
+	r.HandleFunc(blogSlug+pageSlug+"/edit", UpdatePageHandler(db, tmpl)).Methods("POST")
+	r.HandleFunc(blogSlug+pageSlug+"/delete", DeletePageHandler(tmpl)).Methods("GET")
+	r.HandleFunc(blogSlug+pageSlug+"/delete", DeletePageConfirmHandler(db)).Methods("POST")
 	return r
 }

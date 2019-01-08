@@ -11,7 +11,7 @@ import (
 // If a blog does not exist in the database
 // Prompt the user for one on the command line and store it
 func EnsureDefaultBlogExists(db *sql.DB) error {
-	if defaultBlogExistsQuery(db) {
+	if DefaultBlogExistsQuery(db) {
 		return nil
 	}
 
@@ -34,7 +34,7 @@ func EnsureDefaultBlogExists(db *sql.DB) error {
 
 	slug := makeSlug(title)
 
-	return addDefaultBlogCommand(db, slug, hash, title)
+	return AddDefaultBlogCommand(db, slug, hash, title)
 }
 
 // Prompt the user for a new default key and update it in the database
@@ -50,11 +50,11 @@ func ResetDefaultBlogKey(db *sql.DB) error {
 		return err
 	}
 
-	return changeDefaultBlogKeyCommand(db, hash)
+	return ChangeDefaultBlogKeyCommand(db, hash)
 }
 
 // Check if a default blog exists in the database
-func defaultBlogExistsQuery(db *sql.DB) bool {
+func DefaultBlogExistsQuery(db *sql.DB) bool {
 	sql := `
 		select exists(select BlogId from blogs where IsDefault = 1)
 	`
@@ -69,7 +69,7 @@ func defaultBlogExistsQuery(db *sql.DB) bool {
 }
 
 // Add or a default blog to the database
-func addDefaultBlogCommand(db *sql.DB, slug string, hash string, title string) error {
+func AddDefaultBlogCommand(db *sql.DB, slug string, hash string, title string) error {
 	sql := `
 		insert into blogs(Slug, KeyHash, IsDefault, Title, Body, Html) 
 		values(?, ?, 1, ?, '', '')
@@ -79,7 +79,7 @@ func addDefaultBlogCommand(db *sql.DB, slug string, hash string, title string) e
 }
 
 // Add or a default blog to the database
-func changeDefaultBlogKeyCommand(db *sql.DB, hash string) error {
+func ChangeDefaultBlogKeyCommand(db *sql.DB, hash string) error {
 	sql := `
 		update blogs set KeyHash = ? where IsDefault = 1
 	`

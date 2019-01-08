@@ -13,32 +13,40 @@ import (
 func DeletePageHandler(tmpl *template.Template) http.HandlerFunc {
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
 		var i interface{}
-		return tmpl.ExecuteTemplate(w, "delete.html", i)
+		return tmpl.ExecuteTemplate(w, "deletepage.html", i)
 	})
 }
 
 // Post handler to actually delete a page
 func DeletePageConfirmHandler(db *sql.DB) http.HandlerFunc {
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
-		if !VerifyKey(db, r.FormValue("key")) {
-			return errors.New("invalid key")
-		}
+		blogslug := mux.Vars(r)["blogslug"]
+		pageslug := mux.Vars(r)["pageslug"]
+		key := r.FormValue("key")
 
-		slug := mux.Vars(r)["slug"]
-		err := DeletePageCommand(db, slug)
+		blog, err := BlogMetaQuery(db, blogslug)
 		if err != nil {
 			return err
 		}
-		http.Redirect(w, r, "/", http.StatusFound)
+
+		if !verifyHash(key, blog.KeyHash) {
+			return errors.New("invalid key")
+		}
+
+		err = DeletePageCommand(db, blog.BlogId, pageslug)
+		if err != nil {
+			return err
+		}
+		http.Redirect(w, r, "/"+blogslug, http.StatusFound)
 		return nil
 	})
 }
 
 // Delete a page from the database
-func DeletePageCommand(db *sql.DB, slug string) error {
+func DeletePageCommand(db *sql.DB, blogId int, pageslug string) error {
 	sql := `
-		delete from pages where Slug = ?
+		delete from pages where BlogId = ? and Slug = ?
 	`
-	_, err := db.Exec(sql, slug)
+	_, err := db.Exec(sql, blogId, pageslug)
 	return err
 }

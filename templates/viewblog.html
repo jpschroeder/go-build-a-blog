@@ -3,7 +3,7 @@
 {{ template "head.html" .}}
 <body>
 
-<h1>Tumbleweed Technology</h1>
+<h1>{{.Blog.Title}}</h1>
 <p>The random musings of a professional software enginneer that will most likely be read by absolutely noone.</p>
 <p>
     email: <a href="mailto:contact@schroederspace.com">contact@schroederspace.com</a><br/>
@@ -12,8 +12,8 @@
 
 <hr>
 
-{{ range $index, $page := . }}
-    <h2><a href="/{{ $page.Slug }}">{{ $page.Title }}</a></h2>
+{{ range $index, $page := .Pages }}
+    <h2><a href="/{{$.Blog.Slug}}/{{$page.Slug}}">{{ $page.Title }}</a></h2>
     <p class="subtitle">{{ $page.FormattedDate }}</p>
 {{ end }}
 
