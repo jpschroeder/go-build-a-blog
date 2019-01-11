@@ -14,13 +14,15 @@ import (
 // Get handler to render the edit page with empty data
 func AddPageHandler(tmpl *template.Template) http.HandlerFunc {
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
-		page := Page{Date: time.Now(), Title: "", Body: make([]byte, 0), Show: true}
-		return tmpl.ExecuteTemplate(w, "editpage.html", page)
+		blogslug := mux.Vars(r)["blogslug"]
+		page := &Page{Date: time.Now(), Title: "", Body: make([]byte, 0), Show: true}
+		dto := MapEditPageDto(page, blogslug, "")
+		return tmpl.ExecuteTemplate(w, "editpage.html", dto)
 	})
 }
 
 // Post handler to save a new page
-func CreatePageHandler(db *sql.DB) http.HandlerFunc {
+func CreatePageHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
 		blogslug := mux.Vars(r)["blogslug"]
 		key := r.FormValue("key")
@@ -30,18 +32,22 @@ func CreatePageHandler(db *sql.DB) http.HandlerFunc {
 			return err
 		}
 
-		if !verifyHash(key, blog.KeyHash) {
-			return errors.New("invalid key")
-		}
-
 		page, err := parseForm(r)
 		if err != nil {
 			return err
 		}
 
+		dto := MapEditPageDto(page, blogslug, "")
+
+		if !verifyHash(key, blog.KeyHash) {
+			dto.Error = "invalid key"
+			return tmpl.ExecuteTemplate(w, "editpage.html", dto)
+		}
+
 		pageslug, err := CreatePageCommand(db, blog.BlogId, page)
 		if err != nil {
-			return err
+			dto.Error = err.Error()
+			return tmpl.ExecuteTemplate(w, "editpage.html", dto)
 		}
 
 		http.Redirect(w, r, fmt.Sprintf("/%s/%s/edit", blogslug, pageslug), http.StatusFound)
@@ -80,6 +86,9 @@ func CreatePageCommand(db *sql.DB, blogId int, p *Page) (string, error) {
 	html := parseMarkdown(p.Body)
 	_, err := db.Exec(sql, blogId, pageslug, p.Date, p.Show, p.Title, p.Body, html)
 	if err != nil {
+		if err.Error() == "UNIQUE constraint failed: pages.BlogId, pages.Slug" {
+			err = errors.New("There is already a page with this title")
+		}
 		return "", err
 	}
 	return pageslug, nil

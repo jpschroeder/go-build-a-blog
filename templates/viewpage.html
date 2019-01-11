@@ -3,7 +3,10 @@
 {{ template "head.html" .}}
 <body>
 
-<div class="right"><a href="/">home</a></div>
+<div class="right">
+    <a href="/{{.BlogSlug}}">home</a> | 
+    <a href="/{{.BlogSlug}}/{{.PageSlug}}/edit">edit</a>
+</div>
 
 <h1>{{.Title}}</h1>
 <span>{{.FormattedDate}}</span>

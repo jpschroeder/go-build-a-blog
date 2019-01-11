@@ -45,7 +45,7 @@ func createSchema(db *sql.DB) error {
 			Html text null
 		);
 
-		create unique index if not exists idx_pages_slug on pages(Slug);
+		create unique index if not exists idx_pages_slug on pages(BlogId, Slug);
 	`
 	_, err := db.Exec(sql)
 	return err
@@ -76,7 +76,7 @@ func registerRoutes(db *sql.DB, tmpl *template.Template) *mux.Router {
 
 	r.HandleFunc(blogSlug, ViewBlogHandler(db, tmpl)).Methods("GET")
 	r.HandleFunc(blogSlug+"/add", AddPageHandler(tmpl)).Methods("GET")
-	r.HandleFunc(blogSlug+"/add", CreatePageHandler(db)).Methods("POST")
+	r.HandleFunc(blogSlug+"/add", CreatePageHandler(db, tmpl)).Methods("POST")
 
 	r.HandleFunc(blogSlug+pageSlug, ViewPageHandler(db, tmpl)).Methods("GET")
 	r.HandleFunc(blogSlug+pageSlug+"/edit", EditPageHandler(db, tmpl)).Methods("GET")

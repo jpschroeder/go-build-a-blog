@@ -3,18 +3,28 @@
 {{ template "head.html" .}}
 <body>
 
-<div class="right"><a href="/">home</a></div>
+<div class="right">
+    <a href="/{{.BlogSlug}}">home</a>
+    {{if .PageSlug}}
+    | <a href="/{{.BlogSlug}}/{{.PageSlug}}">view</a>
+    | <a href="/{{.BlogSlug}}/{{.PageSlug}}/delete">delete</a>
+    {{end}}
+</div>
 
 <form method="POST">
-    <div><input type="text" name="title" value="{{.Title}}" placeholder="Title" /></div>
+    <input type="text" name="title" value="{{.Title}}" placeholder="Title" />
     <div>
         <input type="datetime-local" name="date" value="{{.FormattedDateTime}}" />
         <input type="checkbox" name="show" {{if .Show}}checked="checked"{{end}} value="1" /> Show in Listing
     </div>
-    <div><textarea name="body" placeholder="Body">{{printf "%s" .Body}}</textarea></div>
-    <div><input type="password" name="key" placeholder="Key" /></div>
+    <textarea name="body" placeholder="Body">{{printf "%s" .Body}}</textarea>
+    <input type="password" name="key" placeholder="Key" />
 
-	<div><input type="submit" value="Save"></div>
+    {{if .Error}}
+    <div class="error">{{.Error}}</div>
+    {{end}}
+
+	<input type="submit" value="Save" />
 </form>
 
 </body>

@@ -19,7 +19,9 @@ func EditPageHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 		if err != nil {
 			return err
 		}
-		return tmpl.ExecuteTemplate(w, "editpage.html", page)
+
+		dto := MapEditPageDto(page, blogslug, pageslug)
+		return tmpl.ExecuteTemplate(w, "editpage.html", dto)
 	})
 }
 
@@ -35,25 +37,53 @@ func UpdatePageHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 			return err
 		}
 
-		if !verifyHash(key, blog.KeyHash) {
-			return errors.New("invalid key")
-		}
-
 		page, err := parseForm(r)
 		if err != nil {
 			return err
 		}
+
+		dto := MapEditPageDto(page, blogslug, pageslug)
+
+		if !verifyHash(key, blog.KeyHash) {
+			dto.Error = "invalid key"
+			return tmpl.ExecuteTemplate(w, "editpage.html", dto)
+		}
+
 		newSlug, err := UpdatePageCommand(db, blog.BlogId, pageslug, page)
 		if err != nil {
-			return err
+			dto.Error = err.Error()
+			return tmpl.ExecuteTemplate(w, "editpage.html", dto)
 		}
+
 		if pageslug != newSlug {
 			http.Redirect(w, r, fmt.Sprintf("/%s/%s/edit", blogslug, newSlug), http.StatusFound)
 			return nil
 		} else {
-			return tmpl.ExecuteTemplate(w, "editpage.html", page)
+			return tmpl.ExecuteTemplate(w, "editpage.html", dto)
 		}
 	})
+}
+
+// Model used to populate the edit page
+type EditPageDto struct {
+	Title             string
+	FormattedDateTime string
+	Show              bool
+	Body              []byte
+	BlogSlug          string
+	PageSlug          string
+	Error             string
+}
+
+// Generate the Edit page dto
+func MapEditPageDto(page *Page, blogslug string, pageslug string) EditPageDto {
+	return EditPageDto{
+		Title:             page.Title,
+		FormattedDateTime: page.FormattedDateTime(),
+		Show:              page.Show,
+		Body:              page.Body,
+		BlogSlug:          blogslug,
+		PageSlug:          pageslug}
 }
 
 // Update page data in the database
@@ -67,6 +97,9 @@ func UpdatePageCommand(db *sql.DB, blogId int, oldSlug string, p *Page) (string,
 	html := parseMarkdown(p.Body)
 	_, err := db.Exec(sql, slug, p.Date, p.Show, p.Title, p.Body, html, blogId, oldSlug)
 	if err != nil {
+		if err.Error() == "UNIQUE constraint failed: pages.BlogId, pages.Slug" {
+			err = errors.New("There is already a page with this title")
+		}
 		return "", err
 	}
 	return slug, nil

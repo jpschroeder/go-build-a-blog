@@ -11,9 +11,17 @@ import (
 
 // Get handler to render the delete page
 func DeletePageHandler(tmpl *template.Template) http.HandlerFunc {
+	type DeletePageDto struct {
+		BlogSlug string
+		PageSlug string
+	}
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
-		var i interface{}
-		return tmpl.ExecuteTemplate(w, "deletepage.html", i)
+		blogslug := mux.Vars(r)["blogslug"]
+		pageslug := mux.Vars(r)["pageslug"]
+		dto := DeletePageDto{
+			BlogSlug: blogslug,
+			PageSlug: pageslug}
+		return tmpl.ExecuteTemplate(w, "deletepage.html", dto)
 	})
 }
 

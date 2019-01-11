@@ -11,10 +11,12 @@ import (
 
 // A get handler to view the html of a page
 func ViewPageHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
-	type PageDto struct {
+	type ViewPageDto struct {
 		FormattedDate string
 		Title         string
 		Html          template.HTML
+		BlogSlug      string
+		PageSlug      string
 	}
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
 		blogslug := mux.Vars(r)["blogslug"]
@@ -25,10 +27,12 @@ func ViewPageHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 			return err
 		}
 
-		dto := PageDto{
+		dto := ViewPageDto{
 			FormattedDate: page.FormattedDate(),
 			Title:         page.Title,
-			Html:          template.HTML(page.Html)}
+			Html:          template.HTML(page.Html),
+			BlogSlug:      blogslug,
+			PageSlug:      pageslug}
 
 		return tmpl.ExecuteTemplate(w, "viewpage.html", dto)
 	})

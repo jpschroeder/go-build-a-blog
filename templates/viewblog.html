@@ -12,6 +12,8 @@
 
 <hr>
 
+<div class="right"><a href="/{{.Blog.Slug}}/add">add</a></div>
+
 {{ range $index, $page := .Pages }}
     <h2><a href="/{{$.Blog.Slug}}/{{$page.Slug}}">{{ $page.Title }}</a></h2>
     <p class="subtitle">{{ $page.FormattedDate }}</p>
