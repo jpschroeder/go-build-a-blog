@@ -45,7 +45,7 @@ func ViewBlogHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 }
 
 type BlogViewModel struct {
-	Blog  *BlogData
+	Blog  *ViewBlogDto
 	Pages []PageListing
 }
 
@@ -86,47 +86,44 @@ func ListPagesQuery(db *sql.DB, blogId int) ([]PageListing, error) {
 }
 
 // Full blog content
-type BlogData struct {
+type ViewBlogDto struct {
 	BlogId int
 	Slug   string
 	Title  string
-	Body   []byte
 	Html   template.HTML
 }
 
 // Get the full blog data from the database
-func ViewBlogQuery(db *sql.DB, blogslug string) (*BlogData, error) {
+func ViewBlogQuery(db *sql.DB, blogslug string) (*ViewBlogDto, error) {
 	sql := `
-		select BlogId, Slug, Title, Body, Html from blogs where Slug = ?
+		select BlogId, Slug, Title, Html from blogs where Slug = ?
 	`
 	row := db.QueryRow(sql, blogslug)
 	return ParseBlogResult(row)
 }
 
 // Get the data for the default blog from the database
-func DefaultBlogQuery(db *sql.DB) (*BlogData, error) {
+func DefaultBlogQuery(db *sql.DB) (*ViewBlogDto, error) {
 	sql := `
-		select BlogId, Slug, Title, Body, Html from blogs where IsDefault = 1
+		select BlogId, Slug, Title, Html from blogs where IsDefault = 1
 	`
 	row := db.QueryRow(sql)
 	return ParseBlogResult(row)
 }
 
 // Parse a returned sql row into a blog struct
-func ParseBlogResult(row *sql.Row) (*BlogData, error) {
+func ParseBlogResult(row *sql.Row) (*ViewBlogDto, error) {
 	var blogId int
 	var slug string
 	var title string
-	var body []byte
 	var html []byte
-	err := row.Scan(&blogId, &slug, &title, &body, &html)
+	err := row.Scan(&blogId, &slug, &title, &html)
 	if err != nil {
 		return nil, err
 	}
-	return &BlogData{
+	return &ViewBlogDto{
 		BlogId: blogId,
 		Slug:   slug,
 		Title:  title,
-		Body:   body,
 		Html:   template.HTML(html)}, nil
 }
