@@ -4,15 +4,15 @@
 <body>
 
 <h1>{{.Blog.Title}}</h1>
-<p>The random musings of a professional software enginneer that will most likely be read by absolutely noone.</p>
-<p>
-    email: <a href="mailto:contact@schroederspace.com">contact@schroederspace.com</a><br/>
-    github: <a href="https://github.com/jpschroeder">jpschroeder</a>
-</p>
+
+<div>{{.Blog.Html}}</div>
 
 <hr>
 
-<div class="right"><a href="/{{.Blog.Slug}}/add">add</a></div>
+<div class="right">
+    <a href="/{{.Blog.Slug}}/add">add</a>
+    | <a href="/{{.Blog.Slug}}/edit">edit</a>
+</div>
 
 {{ range $index, $page := .Pages }}
     <h2><a href="/{{$.Blog.Slug}}/{{$page.Slug}}">{{ $page.Title }}</a></h2>

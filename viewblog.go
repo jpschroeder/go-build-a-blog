@@ -91,7 +91,7 @@ type BlogData struct {
 	Slug   string
 	Title  string
 	Body   []byte
-	Html   []byte
+	Html   template.HTML
 }
 
 // Get the full blog data from the database
@@ -123,5 +123,10 @@ func ParseBlogResult(row *sql.Row) (*BlogData, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &BlogData{BlogId: blogId, Slug: slug, Title: title, Body: body, Html: html}, nil
+	return &BlogData{
+		BlogId: blogId,
+		Slug:   slug,
+		Title:  title,
+		Body:   body,
+		Html:   template.HTML(html)}, nil
 }

@@ -75,6 +75,9 @@ func registerRoutes(db *sql.DB, tmpl *template.Template) *mux.Router {
 	r.HandleFunc("/", DefaultBlogHandler(db, tmpl)).Methods("GET")
 
 	r.HandleFunc(blogSlug, ViewBlogHandler(db, tmpl)).Methods("GET")
+	r.HandleFunc(blogSlug+"/edit", EditBlogHandler(db, tmpl)).Methods("GET")
+	r.HandleFunc(blogSlug+"/edit", UpdateBlogHandler(db, tmpl)).Methods("POST")
+
 	r.HandleFunc(blogSlug+"/add", AddPageHandler(tmpl)).Methods("GET")
 	r.HandleFunc(blogSlug+"/add", CreatePageHandler(db, tmpl)).Methods("POST")
 
