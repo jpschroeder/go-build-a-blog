@@ -26,7 +26,7 @@ func EditBlogHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 	})
 }
 
-// Post handler to save updated page data
+// Post handler to save updated blog data
 func UpdateBlogHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
 		blogslug := mux.Vars(r)["blogslug"]
@@ -59,7 +59,7 @@ func UpdateBlogHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 	})
 }
 
-// Model used to populate the edit page
+// Model used to populate the edit blog page
 type EditBlogDto struct {
 	Title    string
 	Body     []byte
@@ -67,7 +67,7 @@ type EditBlogDto struct {
 	Error    string
 }
 
-// Update page data in the database
+// Update blog data in the database
 func UpdateBlogCommand(db *sql.DB, blogId int, body []byte) error {
 	sql := `
 		update blogs
