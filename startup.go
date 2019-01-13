@@ -56,7 +56,7 @@ func ResetDefaultBlogKey(db *sql.DB) error {
 // Check if a default blog exists in the database
 func DefaultBlogExistsQuery(db *sql.DB) bool {
 	sql := `
-		select exists(select BlogId from blogs where IsDefault = 1)
+		select exists(select BlogSlug from blogs where IsDefault = 1)
 	`
 	row := db.QueryRow(sql)
 
@@ -69,12 +69,12 @@ func DefaultBlogExistsQuery(db *sql.DB) bool {
 }
 
 // Add or a default blog to the database
-func AddDefaultBlogCommand(db *sql.DB, slug string, hash string, title string) error {
+func AddDefaultBlogCommand(db *sql.DB, blogslug string, hash string, title string) error {
 	sql := `
-		insert into blogs(Slug, KeyHash, IsDefault, Title, Body, Html) 
+		insert into blogs(BlogSlug, KeyHash, IsDefault, Title, Body, Html) 
 		values(?, ?, 1, ?, '', '')
 	`
-	_, err := db.Exec(sql, slug, hash, title)
+	_, err := db.Exec(sql, blogslug, hash, title)
 	return err
 }
 

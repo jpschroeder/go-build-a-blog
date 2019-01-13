@@ -10,12 +10,17 @@
 <hr>
 
 <div class="right">
-    <a href="/{{.Blog.Slug}}/add">add</a>
-    | <a href="/{{.Blog.Slug}}/edit">edit</a>
+    {{if .Unlocked}}
+    <a href="/{{.Blog.BlogSlug}}/add">add</a>
+    | <a href="/{{.Blog.BlogSlug}}/edit">edit</a>
+    | <a href="/{{.Blog.BlogSlug}}/lock">lock</a>
+    {{else}}
+    <a href="/{{.Blog.BlogSlug}}/unlock">unlock</a>
+    {{end}}
 </div>
 
 {{ range $index, $page := .Pages }}
-    <h2><a href="/{{$.Blog.Slug}}/{{$page.Slug}}">{{ $page.Title }}</a></h2>
+    <h2><a href="/{{$.Blog.BlogSlug}}/{{$page.PageSlug}}">{{ $page.Title }}</a></h2>
     <p class="subtitle">{{ $page.FormattedDate }}</p>
 {{ end }}
 

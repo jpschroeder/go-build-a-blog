@@ -8,10 +8,13 @@
 </div>
 
 <form method="POST">
-    <h1>{{.Title}}</h1>
-    <textarea name="body" placeholder="Body">{{printf "%s" .Body}}</textarea>
+    <input type="password" name="key" placeholder="Key" />
 
-	<input type="submit" value="Save" />
+    {{if .Error}}
+    <div class="error">{{.Error}}</div>
+    {{end}}
+
+	<input type="submit" value="Unlock" />
 </form>
 
 </body>

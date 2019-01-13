@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -15,12 +17,11 @@ func EditPageHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
 		blogslug := mux.Vars(r)["blogslug"]
 		pageslug := mux.Vars(r)["pageslug"]
-		page, err := ViewPageQuery(db, blogslug, pageslug)
+		dto, err := EditPageQuery(db, blogslug, pageslug)
 		if err != nil {
 			return err
 		}
 
-		dto := MapEditPageDto(page, blogslug, pageslug)
 		return tmpl.ExecuteTemplate(w, "editpage.html", dto)
 	})
 }
@@ -30,11 +31,11 @@ func UpdatePageHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
 		blogslug := mux.Vars(r)["blogslug"]
 		pageslug := mux.Vars(r)["pageslug"]
-		key := r.FormValue("key")
 
-		blog, err := BlogMetaQuery(db, blogslug)
-		if err != nil {
-			return err
+		unlocked := IsUnlocked(db, w, r, blogslug)
+		if !unlocked {
+			http.Redirect(w, r, fmt.Sprintf("/%s/unlock", blogslug), http.StatusFound)
+			return nil
 		}
 
 		page, err := parseForm(r)
@@ -44,19 +45,14 @@ func UpdatePageHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 
 		dto := MapEditPageDto(page, blogslug, pageslug)
 
-		if !verifyHash(key, blog.KeyHash) {
-			dto.Error = "invalid key"
-			return tmpl.ExecuteTemplate(w, "editpage.html", dto)
-		}
-
-		newSlug, err := UpdatePageCommand(db, blog.BlogId, pageslug, page)
+		newpageslug, err := UpdatePageCommand(db, blogslug, pageslug, page)
 		if err != nil {
 			dto.Error = err.Error()
 			return tmpl.ExecuteTemplate(w, "editpage.html", dto)
 		}
 
-		if pageslug != newSlug {
-			http.Redirect(w, r, fmt.Sprintf("/%s/%s/edit", blogslug, newSlug), http.StatusFound)
+		if pageslug != newpageslug {
+			http.Redirect(w, r, fmt.Sprintf("/%s/%s/edit", blogslug, newpageslug), http.StatusFound)
 			return nil
 		} else {
 			return tmpl.ExecuteTemplate(w, "editpage.html", dto)
@@ -86,21 +82,48 @@ func MapEditPageDto(page *Page, blogslug string, pageslug string) EditPageDto {
 		PageSlug:          pageslug}
 }
 
+// Get the full page data from the database
+func EditPageQuery(db *sql.DB, blogslug string, pageslug string) (*EditPageDto, error) {
+	sql := `
+		select Date, Show, Title, Body 
+		from pages
+		where BlogSlug = ? and PageSlug = ?
+	`
+	row := db.QueryRow(sql, blogslug, pageslug)
+
+	var date time.Time
+	var show bool
+	var title string
+	var body []byte
+	err := row.Scan(&date, &show, &title, &body)
+	if err != nil {
+		return nil, err
+	}
+	return &EditPageDto{
+		FormattedDateTime: date.Format(dateTimeFormat),
+		Title:             title,
+		Show:              show,
+		Body:              body,
+		BlogSlug:          blogslug,
+		PageSlug:          pageslug,
+	}, nil
+}
+
 // Update page data in the database
-func UpdatePageCommand(db *sql.DB, blogId int, oldSlug string, p *Page) (string, error) {
+func UpdatePageCommand(db *sql.DB, blogslug string, oldpageslug string, p *Page) (string, error) {
 	sql := `
 		update pages
-		set Slug = ?, Date = ?, Show = ?, Title = ?, Body = ?, Html = ?
-		where BlogId = ? and Slug = ?
+		set PageSlug = ?, Date = ?, Show = ?, Title = ?, Body = ?, Html = ?
+		where BlogSlug = ? and PageSlug = ?
 	`
-	slug := makeSlug(p.Title)
+	newpageslug := makeSlug(p.Title)
 	html := parseMarkdown(p.Body)
-	_, err := db.Exec(sql, slug, p.Date, p.Show, p.Title, p.Body, html, blogId, oldSlug)
+	_, err := db.Exec(sql, newpageslug, p.Date, p.Show, p.Title, p.Body, html, blogslug, oldpageslug)
 	if err != nil {
-		if err.Error() == "UNIQUE constraint failed: pages.BlogId, pages.Slug" {
+		if strings.HasPrefix(err.Error(), "UNIQUE constraint failed") {
 			err = errors.New("There is already a page with this title")
 		}
 		return "", err
 	}
-	return slug, nil
+	return newpageslug, nil
 }

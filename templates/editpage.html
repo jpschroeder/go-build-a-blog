@@ -18,8 +18,7 @@
         <input type="checkbox" name="show" {{if .Show}}checked="checked"{{end}} value="1" /> Show in Listing
     </div>
     <textarea name="body" placeholder="Body">{{printf "%s" .Body}}</textarea>
-    <input type="password" name="key" placeholder="Key" />
-
+    
     {{if .Error}}
     <div class="error">{{.Error}}</div>
     {{end}}

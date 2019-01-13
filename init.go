@@ -23,8 +23,7 @@ func openDb(dbPath string) (*sql.DB, error) {
 func createSchema(db *sql.DB) error {
 	sql := `
 		create table if not exists blogs (
-			BlogId integer primary key autoincrement,
-			Slug varchar(64) not null,
+			BlogSlug varchar(64) not null primary key,
 			KeyHash varchar(128) not null,
 			IsDefault integer not null,
 			Title varchar(64) not null,
@@ -32,20 +31,23 @@ func createSchema(db *sql.DB) error {
 			Html test null
 		);
 
-		create unique index if not exists idx_blogs_slug on blogs(Slug);
-
 		create table if not exists pages (
-			PageId integer primary key autoincrement,
-			BlogId integer REFERENCES blogs(BlogId),
-			Slug varchar(64) not null,
+			PageSlug varchar(64) not null,
+			BlogSlug varchar(64) not null references blogs(BlogSlug) on update cascade on delete cascade,
 			Date datetime not null,
 			Show integer not null,
 			Title varchar(64) not null,
 			Body text null,
-			Html text null
+			Html text null,
+			primary key (PageSlug, BlogSlug)
 		);
 
-		create unique index if not exists idx_pages_slug on pages(BlogId, Slug);
+		create table if not exists sessions (
+			Token varchar(64) not null,
+			BlogSlug varchar(64) not null references blogs(BlogSlug) on update cascade on delete cascade,
+			Effective datetime not null default(datetime('now')),
+			primary key (Token, BlogSlug)
+		)
 	`
 	_, err := db.Exec(sql)
 	return err
@@ -75,6 +77,11 @@ func registerRoutes(db *sql.DB, tmpl *template.Template) *mux.Router {
 	r.HandleFunc("/", DefaultBlogHandler(db, tmpl)).Methods("GET")
 
 	r.HandleFunc(blogSlug, ViewBlogHandler(db, tmpl)).Methods("GET")
+
+	r.HandleFunc(blogSlug+"/unlock", UnlockBlogHandler(tmpl)).Methods("GET")
+	r.HandleFunc(blogSlug+"/unlock", DoUnlockBlogHandler(db, tmpl)).Methods("POST")
+	r.HandleFunc(blogSlug+"/lock", LockBlogHandler(db)).Methods("GET")
+
 	r.HandleFunc(blogSlug+"/edit", EditBlogHandler(db, tmpl)).Methods("GET")
 	r.HandleFunc(blogSlug+"/edit", UpdateBlogHandler(db, tmpl)).Methods("POST")
 

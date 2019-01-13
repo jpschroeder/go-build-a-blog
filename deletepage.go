@@ -2,7 +2,7 @@ package main
 
 import (
 	"database/sql"
-	"errors"
+	"fmt"
 	"html/template"
 	"net/http"
 
@@ -30,18 +30,14 @@ func DeletePageConfirmHandler(db *sql.DB) http.HandlerFunc {
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
 		blogslug := mux.Vars(r)["blogslug"]
 		pageslug := mux.Vars(r)["pageslug"]
-		key := r.FormValue("key")
 
-		blog, err := BlogMetaQuery(db, blogslug)
-		if err != nil {
-			return err
+		unlocked := IsUnlocked(db, w, r, blogslug)
+		if !unlocked {
+			http.Redirect(w, r, fmt.Sprintf("/%s/unlock", blogslug), http.StatusFound)
+			return nil
 		}
 
-		if !verifyHash(key, blog.KeyHash) {
-			return errors.New("invalid key")
-		}
-
-		err = DeletePageCommand(db, blog.BlogId, pageslug)
+		err := DeletePageCommand(db, blogslug, pageslug)
 		if err != nil {
 			return err
 		}
@@ -51,10 +47,10 @@ func DeletePageConfirmHandler(db *sql.DB) http.HandlerFunc {
 }
 
 // Delete a page from the database
-func DeletePageCommand(db *sql.DB, blogId int, pageslug string) error {
+func DeletePageCommand(db *sql.DB, blogslug string, pageslug string) error {
 	sql := `
-		delete from pages where BlogId = ? and Slug = ?
+		delete from pages where BlogSlug = ? and PageSlug = ?
 	`
-	_, err := db.Exec(sql, blogId, pageslug)
+	_, err := db.Exec(sql, blogslug, pageslug)
 	return err
 }

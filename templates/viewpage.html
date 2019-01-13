@@ -4,8 +4,10 @@
 <body>
 
 <div class="right">
-    <a href="/{{.BlogSlug}}">home</a> | 
-    <a href="/{{.BlogSlug}}/{{.PageSlug}}/edit">edit</a>
+    <a href="/{{.BlogSlug}}">home</a> 
+    {{if .Unlocked}}
+    | <a href="/{{.BlogSlug}}/{{.PageSlug}}/edit">edit</a>
+    {{end}}
 </div>
 
 <h1>{{.Title}}</h1>

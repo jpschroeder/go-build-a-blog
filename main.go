@@ -41,10 +41,13 @@ func main() {
 	}
 
 	// Parse any html templates used by the application
+	log.Println("Parse Templates")
 	tmpl, err := parseTemplates(*tmplPath)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	go ExpireSessionsJob(db)
 
 	// Register all of the routing handlers
 	log.Println("Register Routes")
