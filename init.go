@@ -31,6 +31,8 @@ func createSchema(db *sql.DB) error {
 			Html test null
 		);
 
+		create index idx_blogs_default on blogs(IsDefault) where IsDefault = 1;
+
 		create table if not exists pages (
 			PageSlug varchar(64) not null,
 			BlogSlug varchar(64) not null references blogs(BlogSlug) on update cascade on delete cascade,
@@ -41,6 +43,8 @@ func createSchema(db *sql.DB) error {
 			Html text null,
 			primary key (PageSlug, BlogSlug)
 		);
+
+		create index if not exists idx_pages_list on pages(BlogSlug, Show, Date);
 
 		create table if not exists sessions (
 			Token varchar(64) not null,
