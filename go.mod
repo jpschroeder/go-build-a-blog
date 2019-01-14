@@ -7,6 +7,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.10.0
 	github.com/russross/blackfriday v2.0.0+incompatible
 	github.com/satori/go.uuid v1.2.0
+	github.com/shuLhan/go-bindata v3.4.0+incompatible // indirect
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	golang.org/x/crypto v0.0.0-20181203042331-505ab145d0a9
 	golang.org/x/text v0.3.0 // indirect
