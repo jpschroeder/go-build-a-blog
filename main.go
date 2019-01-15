@@ -16,9 +16,9 @@ func main() {
 	// Accept a command line flag "-addr :8080"
 	// This flag tells the server the address to listen on
 	addr := flag.String("addr", "localhost:8080", "the address/port to listen on \nuse :<port> to listen on all addresses\n")
-	// Accept a command line flag "-db ./data.db"
+	// Accept a command line flag "-db ./go-build-a-blog.db"
 	// This flag tells the server the path to the sqlite database file
-	dbFile := flag.String("db", "data.db", "the path to the sqlite database file \nit will be created if it does not already exist\n")
+	dbFile := flag.String("db", "go-build-a-blog.db", "the path to the sqlite database file \nit will be created if it does not already exist\n")
 
 	flag.Parse()
 
