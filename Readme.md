@@ -21,6 +21,19 @@ go build
 
 You can also use the included build script that combines these steps.
 
+# deploying
+
+You can build the project under linux (or Windows Subsystem for Linux) and just copy the executable to your server.
+
+You can then run the program directly or use systemd to install it as a service and keep it running.
+
+Customize the `go-build-a-blog.service` file in the repo for your server and copy it to `/lib/systemd/system/go-build-a-blog.service`
+
+Start the app with: `systemctl start go-build-a-blog`  
+Enable it on boot with: `systemctl enable go-build-a-blog`  
+Check it's status with: `systemctl status go-build-a-blog`  
+See standard output/error with: `journalctl -f -u go-build-a-blog`
+
 ## credits
 
 - [txti](http://txti.es/) Minimalistic design inspiration

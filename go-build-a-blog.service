@@ -1,0 +1,12 @@
+[Unit]
+Description=go-build-a-blog
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+WorkingDirectory=/root/data/go-build-a-blog
+ExecStart=/root/data/go-build-a-blog/go-build-a-blog -addr :8080
+
+[Install]
+WantedBy=multi-user.target
