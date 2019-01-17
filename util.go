@@ -6,9 +6,10 @@ import (
 	"regexp"
 	"time"
 
+	"github.com/Depado/bfchroma"
 	"github.com/avelino/slugify"
-	"github.com/russross/blackfriday"
 	"golang.org/x/crypto/bcrypt"
+	blackfriday "gopkg.in/russross/blackfriday.v2"
 )
 
 const (
@@ -35,7 +36,7 @@ func makeSlug(input string) string {
 
 // Translate a markdown string into html
 func parseMarkdown(input []byte) []byte {
-	return blackfriday.Run(toUnix(input))
+	return blackfriday.Run(toUnix(input), blackfriday.WithRenderer(bfchroma.NewRenderer(bfchroma.Style("vs"))))
 }
 
 // Remove all instances of a character from a string
