@@ -6,7 +6,7 @@ Type=simple
 Restart=always
 RestartSec=5s
 WorkingDirectory=/root/data/go-build-a-blog
-ExecStart=/root/data/go-build-a-blog/go-build-a-blog -addr :8080
+ExecStart=/root/data/go-build-a-blog/go-build-a-blog -httpaddr :80 -httpsaddr :443 -httpsdomain blog.mysite.com
 
 [Install]
 WantedBy=multi-user.target
