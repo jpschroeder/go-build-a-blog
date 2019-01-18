@@ -1,25 +1,52 @@
 package main
 
 import (
+	"crypto/tls"
 	"flag"
 	"log"
 	"net/http"
+
+	"golang.org/x/crypto/acme/autocert"
 )
 
 // A *very* simple blogging engine
 func main() {
 	log.Println("Starting Application")
 
-	// Accept a command line flag "-reset"
-	// This flag allows you to change the key needed to edit/delete posts
-	reset := flag.Bool("reset", false, "reset the security key used to edit/delete\n")
-	// Accept a command line flag "-addr :8080"
-	// This flag tells the server the address to listen on
-	addr := flag.String("addr", "localhost:8080", "the address/port to listen on \nuse :<port> to listen on all addresses\n")
 	// Accept a command line flag "-db ./go-build-a-blog.db"
 	// This flag tells the server the path to the sqlite database file
-	dbFile := flag.String("db", "go-build-a-blog.db", "the path to the sqlite database file \nit will be created if it does not already exist\n")
+	dbFile := flag.String("db", "go-build-a-blog.db",
+		"the path to the sqlite database file \n"+
+			"it will be created if it does not already exist\n")
 
+	// Accept a command line flag "-reset"
+	// This flag allows you to change the key needed to edit/delete posts
+	reset := flag.Bool("reset", false,
+		"reset the security key used to edit/delete\n")
+
+	// Accept a command line flag "-httpaddr :8080"
+	// This flag tells the server the http address to listen on
+	httpaddr := flag.String("httpaddr", "localhost:8080",
+		"the address/port to listen on for http \n"+
+			"use :<port> to listen on all addresses\n")
+
+	// Accept a command line flag "-httpsaddr :443"
+	// This flag tells the server the https address to listen on
+	httpsaddr := flag.String("httpsaddr", "",
+		"the address/port to listen on for https \n"+
+			"use :<port> to listen on all addresses\n"+
+			"this should only be used when listening publicly with proper dns address configured\n"+
+			"this will generate a certificate using letsencrypt\n"+
+			"the server will also listen on the -httpaddr but will redirect to https\n")
+
+	// Accept a command line flag "-httpsaddr :443"
+	// This flag tells the server the https address to listen on
+	httpsdomain := flag.String("httpsdomain", "",
+		"the domain to use for https\n"+
+			"this flag should be used in conjunction with the -httpsaddr flag\n"+
+			"this should only be used when listening publicly with proper dns address configured\n")
+
+	log.Println("Parsing Command Line Flags")
 	flag.Parse()
 
 	// Connect to the sqlite database and make sure the schema exists
@@ -48,11 +75,46 @@ func main() {
 
 	// Register all of the routing handlers
 	log.Println("Register Routes")
-	http.Handle("/", registerRoutes(db, tmpl))
+	mux := registerRoutes(db, tmpl)
 
-	// Start the application server
-	log.Println("Listening on", *addr)
-	log.Fatal(http.ListenAndServe(*addr, nil))
+	if httpsaddr == nil || *httpsaddr == "" {
+		// Use HTTP
+
+		http.Handle("/", mux)
+
+		// Start the application server
+		log.Println("Listening on http", *httpaddr)
+		log.Fatal(http.ListenAndServe(*httpaddr, nil))
+	} else {
+		// Use HTTPS
+
+		log.Println("Configure Certificate")
+		certManager := autocert.Manager{
+			Prompt: autocert.AcceptTOS,
+			//Cache:  autocert.DirCache("certs"),
+			Cache: SqliteCache{db: db},
+		}
+
+		if httpsdomain != nil && *httpsdomain != "" {
+			certManager.HostPolicy = autocert.HostWhitelist(*httpsdomain)
+		}
+
+		server := &http.Server{
+			Addr:    *httpsaddr,
+			Handler: mux,
+			TLSConfig: &tls.Config{
+				GetCertificate: certManager.GetCertificate,
+			},
+		}
+
+		go func() {
+			log.Println("Listening on http", *httpaddr)
+			h := certManager.HTTPHandler(nil)
+			log.Fatal(http.ListenAndServe(*httpaddr, h))
+		}()
+		log.Println("Listening on https", *httpsaddr)
+		log.Fatal(server.ListenAndServeTLS("", ""))
+	}
 
 	log.Println("Application Finished")
 }

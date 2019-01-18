@@ -251,7 +251,7 @@ func bindataTemplatesheadhtml() (*asset, error) {
 		size: 1273,
 		md5checksum: "",
 		mode: os.FileMode(438),
-		modTime: time.Unix(1547699454, 0),
+		modTime: time.Unix(1547700536, 0),
 	}
 
 	a := &asset{bytes: bytes, info: info}

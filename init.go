@@ -75,7 +75,12 @@ func createSchema(db *sql.DB) error {
 			BlogSlug varchar(64) not null references blogs(BlogSlug) on update cascade on delete cascade,
 			Effective datetime not null default(datetime('now')),
 			primary key (Token, BlogSlug)
-		)
+		);
+
+		create table if not exists cache (
+			Name varchar(128) not null primary key,
+			Data text null
+		);
 	`
 	_, err := db.Exec(sql)
 	return err
