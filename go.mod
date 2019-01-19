@@ -3,6 +3,7 @@ module go-build-a-blog
 require (
 	github.com/Depado/bfchroma v1.1.1
 	github.com/avelino/slugify v0.0.0-20180501145920-855f152bd774
+	github.com/elazarl/go-bindata-assetfs v1.0.0
 	github.com/gorilla/context v1.1.1 // indirect
 	github.com/gorilla/mux v1.6.2
 	github.com/mattn/go-sqlite3 v1.10.0

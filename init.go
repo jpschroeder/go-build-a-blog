@@ -3,7 +3,9 @@ package main
 import (
 	"database/sql"
 	"html/template"
+	"net/http"
 
+	assetfs "github.com/elazarl/go-bindata-assetfs"
 	"github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -126,5 +128,9 @@ func registerRoutes(db *sql.DB, tmpl *template.Template) *mux.Router {
 	r.HandleFunc(blogSlug+pageSlug+"/edit", UpdatePageHandler(db, tmpl)).Methods("POST")
 	r.HandleFunc(blogSlug+pageSlug+"/delete", DeletePageHandler(tmpl)).Methods("GET")
 	r.HandleFunc(blogSlug+pageSlug+"/delete", DeletePageConfirmHandler(db)).Methods("POST")
+
+	static := &assetfs.AssetFS{Asset: Asset, AssetDir: AssetDir, AssetInfo: AssetInfo, Prefix: "static"}
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(static)))
+
 	return r
 }
