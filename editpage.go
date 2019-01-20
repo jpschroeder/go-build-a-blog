@@ -51,12 +51,8 @@ func UpdatePageHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 			return tmpl.ExecuteTemplate(w, "editpage.html", dto)
 		}
 
-		if pageslug != newpageslug {
-			http.Redirect(w, r, fmt.Sprintf("/%s/%s/edit", blogslug, newpageslug), http.StatusFound)
-			return nil
-		} else {
-			return tmpl.ExecuteTemplate(w, "editpage.html", dto)
-		}
+		http.Redirect(w, r, fmt.Sprintf("/%s/%s", blogslug, newpageslug), http.StatusFound)
+		return nil
 	})
 }
 

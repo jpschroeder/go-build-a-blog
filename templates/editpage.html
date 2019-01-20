@@ -1,6 +1,16 @@
 <!doctype html>
 <html lang="en">
 {{ template "head.html" .Title}}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.2/codemirror.min.css">
+<style>
+.CodeMirror {
+    height: 600px;
+    margin-bottom: 1.5em;
+    border: 1px inset rgb(238, 238, 238);
+    padding: .5em 1%;
+    width: 99%;
+}
+</style>
 <body>
 
 <div class="right">
@@ -17,7 +27,7 @@
         <input type="datetime-local" name="date" value="{{.FormattedDateTime}}" />
         <input type="checkbox" name="show" {{if .Show}}checked="checked"{{end}} value="1" /> Show in Listing
     </div>
-    <textarea name="body" placeholder="Body">{{printf "%s" .Body}}</textarea>
+    <textarea name="body" placeholder="Body" id="body">{{printf "%s" .Body}}</textarea>
     
     {{if .Error}}
     <div class="error">{{.Error}}</div>
@@ -26,5 +36,58 @@
 	<input type="submit" value="Save" />
 </form>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js"></script>
+<script>
+requirejs.config({
+    packages: [{
+        name: "codemirror",
+        location: "https://cdn.jsdelivr.net/npm/codemirror@5.42.2",
+        main: "lib/codemirror"
+    }],
+});
+requirejs([
+    "codemirror",
+    "codemirror/mode/markdown/markdown",
+    "codemirror/mode/clike/clike", // c,c++,c#
+    "codemirror/mode/css/css",
+    "codemirror/mode/dockerfile/dockerfile",
+    "codemirror/mode/diff/diff",
+    "codemirror/mode/erlang/erlang",
+    "codemirror/mode/mllike/mllike", // f#
+    "codemirror/mode/go/go",
+    "codemirror/mode/handlebars/handlebars",
+    "codemirror/mode/haskell/haskell",
+    "codemirror/mode/htmlembedded/htmlembedded", // jsp,asp.net
+    "codemirror/mode/htmlmixed/htmlmixed",
+    "codemirror/mode/http/http",
+    "codemirror/mode/javascript/javascript",
+    "codemirror/mode/jsx/jsx",
+    "codemirror/mode/lua/lua",
+    "codemirror/mode/gfm/gfm", // github markdown
+    "codemirror/mode/nginx/nginx",
+    "codemirror/mode/perl/perl",
+    "codemirror/mode/php/php",
+    "codemirror/mode/powershell/powershell",
+    "codemirror/mode/python/python",
+    "codemirror/mode/ruby/ruby",
+    "codemirror/mode/rust/rust",
+    "codemirror/mode/shell/shell",
+    "codemirror/mode/sql/sql",
+    "codemirror/mode/stex/stex",
+    "codemirror/mode/xml/xml",
+    "codemirror/mode/yaml/yaml"
+    ],
+    function(CodeMirror) {
+        var editor = CodeMirror.fromTextArea(document.getElementById("body"), {
+            mode: 'gfm',
+            lineNumbers: false,
+            theme: "default",
+            extraKeys: {"Enter": "newlineAndIndentContinueMarkdownList"},
+            fencedCodeBlockHighlighting: true,
+            lineWrapping: true
+        });
+    }
+);
+</script>
 </body>
 </html>
