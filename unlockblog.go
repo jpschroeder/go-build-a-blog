@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/gofrs/uuid"
 	"github.com/gorilla/mux"
-	uuid "github.com/satori/go.uuid"
 )
 
 const sessionTimeoutDays = 14
@@ -49,7 +49,11 @@ func DoUnlockBlogHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 		}
 
 		// Generate a new session token
-		token := uuid.NewV4().String()
+		uid, err := uuid.NewV4()
+		if err != nil {
+			return err
+		}
+		token := uid.String()
 
 		// Store the session token in the database
 		err = InsertSessionCommand(db, blogslug, token)
