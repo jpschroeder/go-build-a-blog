@@ -66,7 +66,7 @@ go build
 
 You can also use the included build script that combines these steps.
 
-# deploying
+## deploying
 
 You can build the project under linux (or Windows Subsystem for Linux) and just copy the executable to your server.
 
