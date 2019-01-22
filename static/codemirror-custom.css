@@ -1,0 +1,7 @@
+.CodeMirror {
+    height: 600px;
+    margin-bottom: 1.5em;
+    border: 1px inset rgb(238, 238, 238);
+    padding: .5em 1%;
+    width: 99%;
+}

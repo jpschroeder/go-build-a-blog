@@ -26,10 +26,12 @@ uglifyjs `
 .\static\src\codemirror-5.42.2\mode\meta.js `
 .\static\src\codemirror-5.42.2\addon\mode\simple.js `
 .\static\src\codemirror-5.42.2\mode\rust\rust.js `
+.\static\codemirror-custom.js `
 -o .\static\codemirror-bundle.js
 
 # install the js minifier with `npm install uglifycss -g`
 write-output "Bundling Static CSS"
 uglifycss `
 .\static\src\codemirror-5.42.2\lib\codemirror.css `
+.\static\codemirror-custom.css `
 --output .\static\codemirror-bundle.css

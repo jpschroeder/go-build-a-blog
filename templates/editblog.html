@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="en">
 {{ template "head.html" .Title}}
+<link rel="stylesheet" href="/static/codemirror-bundle.css">
 <body>
 
 <div class="right">
@@ -9,10 +10,11 @@
 
 <form method="POST">
     <h1>{{.Title}}</h1>
-    <textarea name="body" placeholder="Body">{{printf "%s" .Body}}</textarea>
+    <textarea name="body" placeholder="Body" id="body">{{printf "%s" .Body}}</textarea>
 
 	<input type="submit" value="Save" />
 </form>
 
+<script src="/static/codemirror-bundle.js"></script>
 </body>
 </html>

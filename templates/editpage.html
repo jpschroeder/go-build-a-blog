@@ -2,15 +2,6 @@
 <html lang="en">
 {{ template "head.html" .Title}}
 <link rel="stylesheet" href="/static/codemirror-bundle.css">
-<style>
-.CodeMirror {
-    height: 600px;
-    margin-bottom: 1.5em;
-    border: 1px inset rgb(238, 238, 238);
-    padding: .5em 1%;
-    width: 99%;
-}
-</style>
 <body>
 
 <div class="right">
@@ -37,15 +28,5 @@
 </form>
 
 <script src="/static/codemirror-bundle.js"></script>
-<script>
-    var editor = CodeMirror.fromTextArea(document.getElementById("body"), {
-        mode: 'markdown',
-        lineNumbers: false,
-        theme: "default",
-        extraKeys: {"Enter": "newlineAndIndentContinueMarkdownList"},
-        fencedCodeBlockHighlighting: true,
-        lineWrapping: true
-    });
-</script>
 </body>
 </html>
