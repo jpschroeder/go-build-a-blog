@@ -46,7 +46,7 @@ func CreatePageHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 			return tmpl.ExecuteTemplate(w, "editpage.html", dto)
 		}
 
-		http.Redirect(w, r, fmt.Sprintf("/%s/%s/edit", blogslug, pageslug), http.StatusFound)
+		http.Redirect(w, r, fmt.Sprintf("/%s/%s", blogslug, pageslug), http.StatusFound)
 		return nil
 	})
 }

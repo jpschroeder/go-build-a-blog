@@ -17,16 +17,18 @@ func DefaultBlogHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 			return err
 		}
 
-		pages, err := ListPagesQuery(db, blog.BlogSlug)
+		unlocked := IsUnlocked(db, w, r, blog.BlogSlug)
+
+		var pages []PageListing
+		if unlocked {
+			pages, err = ListAllPagesQuery(db, blog.BlogSlug)
+		} else {
+			pages, err = ListVisiblePagesQuery(db, blog.BlogSlug)
+		}
 		if err != nil {
 			return err
 		}
-
-		model := BlogViewModel{
-			Blog:     blog,
-			Pages:    pages,
-			Unlocked: IsUnlocked(db, w, r, blog.BlogSlug),
-		}
+		model := BlogViewModel{Blog: blog, Pages: pages, Unlocked: unlocked}
 		return tmpl.ExecuteTemplate(w, "viewblog.html", model)
 	})
 }
@@ -40,15 +42,18 @@ func ViewBlogHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 			return err
 		}
 
-		pages, err := ListPagesQuery(db, blogslug)
+		unlocked := IsUnlocked(db, w, r, blog.BlogSlug)
+
+		var pages []PageListing
+		if unlocked {
+			pages, err = ListAllPagesQuery(db, blog.BlogSlug)
+		} else {
+			pages, err = ListVisiblePagesQuery(db, blog.BlogSlug)
+		}
 		if err != nil {
 			return err
 		}
-		model := BlogViewModel{
-			Blog:     blog,
-			Pages:    pages,
-			Unlocked: IsUnlocked(db, w, r, blog.BlogSlug),
-		}
+		model := BlogViewModel{Blog: blog, Pages: pages, Unlocked: unlocked}
 		return tmpl.ExecuteTemplate(w, "viewblog.html", model)
 	})
 }
@@ -64,19 +69,36 @@ type PageListing struct {
 	PageSlug string
 	Title    string
 	Date     time.Time
+	Show     bool
 }
 
 func (p PageListing) FormattedDate() string {
 	return p.Date.Format(dateFormat)
 }
 
-// Query the database for the list of page titles and metadata
-func ListPagesQuery(db *sql.DB, blogslug string) ([]PageListing, error) {
-	var ret []PageListing
+// Query the database for the list of all visible page titles and metadata
+func ListVisiblePagesQuery(db *sql.DB, blogslug string) ([]PageListing, error) {
 	sql := `
-		select PageSlug, Title, Date from pages where Show = 1 and BlogSlug = ? order by Date desc
+		select PageSlug, Title, Date, Show from pages 
+		where Show = 1 and BlogSlug = ? order by Date desc
 	`
 	rows, err := db.Query(sql, blogslug)
+	return ParsePagesResult(rows, err)
+}
+
+// Query the database for the list of all page titles and metadata
+func ListAllPagesQuery(db *sql.DB, blogslug string) ([]PageListing, error) {
+	sql := `
+		select PageSlug, Title, Date, Show from pages 
+		where BlogSlug = ? order by Date desc
+	`
+	rows, err := db.Query(sql, blogslug)
+	return ParsePagesResult(rows, err)
+}
+
+// Parse sql rows into pages metadata struct
+func ParsePagesResult(rows *sql.Rows, err error) ([]PageListing, error) {
+	var ret []PageListing
 	if err != nil {
 		return ret, err
 	}
@@ -86,11 +108,12 @@ func ListPagesQuery(db *sql.DB, blogslug string) ([]PageListing, error) {
 		var pageslug string
 		var title string
 		var date time.Time
-		err = rows.Scan(&pageslug, &title, &date)
+		var show bool
+		err = rows.Scan(&pageslug, &title, &date, &show)
 		if err != nil {
 			return ret, err
 		}
-		ret = append(ret, PageListing{PageSlug: pageslug, Title: title, Date: date})
+		ret = append(ret, PageListing{PageSlug: pageslug, Title: title, Date: date, Show: show})
 	}
 	return ret, rows.Err()
 }

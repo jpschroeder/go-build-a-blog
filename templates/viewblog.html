@@ -21,7 +21,10 @@
 
 {{ range $index, $page := .Pages }}
     <h2><a href="/{{$.Blog.BlogSlug}}/{{$page.PageSlug}}">{{ $page.Title }}</a></h2>
-    <p class="subtitle">{{ $page.FormattedDate }}</p>
+    <p class="subtitle">
+        {{ $page.FormattedDate }}
+        {{if not $page.Show}} (hidden) {{end}}
+    </p>
 {{ end }}
 
 </body>
