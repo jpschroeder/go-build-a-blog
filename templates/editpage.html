@@ -19,6 +19,7 @@
         <input type="checkbox" name="show" {{if .Show}}checked="checked"{{end}} value="1" /> Show in Listing
     </div>
     <textarea name="body" placeholder="Body" id="body">{{printf "%s" .Body}}</textarea>
+    <div class="right"><a href="#" id="syntaxtoggle">syntax off</a></div>
     
     {{if .Error}}
     <div class="error">{{.Error}}</div>
