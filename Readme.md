@@ -60,7 +60,7 @@ However, if you change any of the files in the `templates/` folder, you will fir
 Install the bundling tool and build the executable as follows:
 ```shell
 go get -u github.com/shuLhan/go-bindata/cmd/go-bindata
-go-bindata templates/...
+go generate
 go build
 ```
 

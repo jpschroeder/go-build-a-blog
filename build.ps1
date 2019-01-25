@@ -1,6 +1,6 @@
 
 write-output "Bundling Templates"
-go-bindata templates/... static/...
+go generate
 
 write-output "Building Source"
 go build

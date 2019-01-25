@@ -1,6 +1,6 @@
 
 echo "Bundling Templates"
-go-bindata templates/... static/...
+go generate
 
 echo "Building Source"
 go build
