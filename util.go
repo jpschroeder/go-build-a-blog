@@ -8,6 +8,7 @@ import (
 
 	"github.com/Depado/bfchroma"
 	"github.com/avelino/slugify"
+	"github.com/microcosm-cc/bluemonday"
 	"golang.org/x/crypto/bcrypt"
 	blackfriday "gopkg.in/russross/blackfriday.v2"
 )
@@ -36,7 +37,12 @@ func makeSlug(input string) string {
 
 // Translate a markdown string into html
 func parseMarkdown(input []byte) []byte {
-	return blackfriday.Run(toUnix(input), blackfriday.WithRenderer(bfchroma.NewRenderer(bfchroma.Style("vs"))))
+	highlighter := bfchroma.NewRenderer(bfchroma.Style("vs"))
+	html := blackfriday.Run(toUnix(input), blackfriday.WithRenderer(highlighter))
+	policy := bluemonday.UGCPolicy()
+	policy.AllowAttrs("style").Matching(regexp.MustCompile(`color:#[0-9a-f]+`)).OnElements("span")
+	sanitized := policy.SanitizeBytes(html)
+	return sanitized
 }
 
 // Remove all instances of a character from a string
