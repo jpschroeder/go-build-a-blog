@@ -23,7 +23,7 @@ go get -u github.com/jpschroeder/go-build-a-blog
 ## usage
 
 ```shell
-go-build-a-blog.exe -h
+go-build-a-blog -h
   -db string
         the path to the sqlite database file
         it will be created if it does not already exist
