@@ -19,7 +19,7 @@ type ViewPageDto struct {
 }
 
 // A get handler to view the html of a page
-func ViewPageHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
+func ViewPageHandler(db *sql.DB, tmpl ExecuteTemplateFunc) http.HandlerFunc {
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
 		blogslug := mux.Vars(r)["blogslug"]
 		pageslug := mux.Vars(r)["pageslug"]
@@ -31,7 +31,7 @@ func ViewPageHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 
 		dto.Unlocked = IsUnlocked(db, w, r, blogslug)
 
-		return tmpl.ExecuteTemplate(w, "viewpage.html", dto)
+		return tmpl(w, "viewpage.html", dto)
 	})
 }
 

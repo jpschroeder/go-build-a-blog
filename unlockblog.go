@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"html/template"
 	"log"
 	"net/http"
 	"time"
@@ -21,16 +20,16 @@ type UnlockBlogDto struct {
 }
 
 // Get http handler to render the unlock page
-func UnlockBlogHandler(tmpl *template.Template) http.HandlerFunc {
+func UnlockBlogHandler(tmpl ExecuteTemplateFunc) http.HandlerFunc {
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
 		blogslug := mux.Vars(r)["blogslug"]
 		dto := UnlockBlogDto{BlogSlug: blogslug}
-		return tmpl.ExecuteTemplate(w, "unlock.html", dto)
+		return tmpl(w, "unlock.html", dto)
 	})
 }
 
 // Post http handler to actually unlock a blog
-func DoUnlockBlogHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
+func DoUnlockBlogHandler(db *sql.DB, tmpl ExecuteTemplateFunc) http.HandlerFunc {
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
 		blogslug := mux.Vars(r)["blogslug"]
 		key := r.FormValue("key")
@@ -45,7 +44,7 @@ func DoUnlockBlogHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 		// Verify the hash against the key passed in
 		if !verifyHash(key, keyhash) {
 			dto.Error = "invalid key"
-			return tmpl.ExecuteTemplate(w, "unlock.html", dto)
+			return tmpl(w, "unlock.html", dto)
 		}
 
 		// Generate a new session token

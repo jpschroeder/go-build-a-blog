@@ -27,14 +27,7 @@ func EnsureDefaultBlogExists(db *sql.DB) error {
 		return err
 	}
 
-	hash, err := createHash(key)
-	if err != nil {
-		return err
-	}
-
-	slug := makeSlug(title)
-
-	return AddDefaultBlogCommand(db, slug, hash, title)
+	return AddDefaultBlogCommand(db, key, title)
 }
 
 // Prompt the user for a new default key and update it in the database
@@ -69,12 +62,18 @@ func DefaultBlogExistsQuery(db *sql.DB) bool {
 }
 
 // Add or a default blog to the database
-func AddDefaultBlogCommand(db *sql.DB, blogslug string, hash string, title string) error {
+func AddDefaultBlogCommand(db *sql.DB, key string, title string) error {
+	blogslug := makeSlug(title)
+	hash, err := createHash(key)
+	if err != nil {
+		return err
+	}
+
 	sql := `
 		insert into blogs(BlogSlug, KeyHash, IsDefault, Title, Body, Html) 
 		values(?, ?, 1, ?, '', '')
 	`
-	_, err := db.Exec(sql, blogslug, hash, title)
+	_, err = db.Exec(sql, blogslug, hash, title)
 	return err
 }
 

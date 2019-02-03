@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strings"
 	"time"
@@ -13,17 +12,17 @@ import (
 )
 
 // Get handler to render the edit page with empty data
-func AddPageHandler(tmpl *template.Template) http.HandlerFunc {
+func AddPageHandler(tmpl ExecuteTemplateFunc) http.HandlerFunc {
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
 		blogslug := mux.Vars(r)["blogslug"]
 		page := &Page{Date: time.Now(), Title: "", Body: make([]byte, 0), Show: true}
 		dto := MapEditPageDto(page, blogslug, "")
-		return tmpl.ExecuteTemplate(w, "editpage.html", dto)
+		return tmpl(w, "editpage.html", dto)
 	})
 }
 
 // Post handler to save a new page
-func CreatePageHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
+func CreatePageHandler(db *sql.DB, tmpl ExecuteTemplateFunc) http.HandlerFunc {
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
 		blogslug := mux.Vars(r)["blogslug"]
 
@@ -43,7 +42,7 @@ func CreatePageHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 		pageslug, err := CreatePageCommand(db, blogslug, page)
 		if err != nil {
 			dto.Error = err.Error()
-			return tmpl.ExecuteTemplate(w, "editpage.html", dto)
+			return tmpl(w, "editpage.html", dto)
 		}
 
 		http.Redirect(w, r, fmt.Sprintf("/%s/%s", blogslug, pageslug), http.StatusFound)

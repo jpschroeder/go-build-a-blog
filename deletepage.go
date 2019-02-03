@@ -3,14 +3,13 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"html/template"
 	"net/http"
 
 	"github.com/gorilla/mux"
 )
 
 // Get handler to render the delete page
-func DeletePageHandler(tmpl *template.Template) http.HandlerFunc {
+func DeletePageHandler(tmpl ExecuteTemplateFunc) http.HandlerFunc {
 	type DeletePageDto struct {
 		BlogSlug string
 		PageSlug string
@@ -21,7 +20,7 @@ func DeletePageHandler(tmpl *template.Template) http.HandlerFunc {
 		dto := DeletePageDto{
 			BlogSlug: blogslug,
 			PageSlug: pageslug}
-		return tmpl.ExecuteTemplate(w, "deletepage.html", dto)
+		return tmpl(w, "deletepage.html", dto)
 	})
 }
 

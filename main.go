@@ -1,6 +1,6 @@
 package main
 
-//go:generate go-bindata templates/... static/...
+//go:generate go-bindata -ignore=src templates/... static/...
 
 import (
 	"crypto/tls"
@@ -48,6 +48,9 @@ func main() {
 			"this flag should be used in conjunction with the -httpsaddr flag\n"+
 			"this should only be used when listening publicly with proper dns address configured\n")
 
+	devmode := flag.Bool("dev", false,
+		"development mode: load html temlates from the ./templates folder instead of from the bundle\n")
+
 	log.Println("Parsing Command Line Flags")
 	flag.Parse()
 
@@ -68,7 +71,12 @@ func main() {
 
 	// Parse any html templates used by the application
 	log.Println("Parse Templates")
-	tmpl, err := parseTemplates()
+	var tmpl ExecuteTemplateFunc
+	if *devmode {
+		tmpl, err = parseFileTemplates()
+	} else {
+		tmpl, err = parseBundledTemplates()
+	}
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -77,7 +85,7 @@ func main() {
 
 	// Register all of the routing handlers
 	log.Println("Register Routes")
-	mux := registerRoutes(db, tmpl)
+	mux := registerRoutes(db, tmpl, *devmode)
 
 	if httpsaddr == nil || *httpsaddr == "" {
 		// Use HTTP

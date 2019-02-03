@@ -3,26 +3,25 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"html/template"
 	"net/http"
 
 	"github.com/gorilla/mux"
 )
 
 // Get handler to render the edit blog page
-func EditBlogHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
+func EditBlogHandler(db *sql.DB, tmpl ExecuteTemplateFunc) http.HandlerFunc {
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
 		blogslug := mux.Vars(r)["blogslug"]
 		blog, err := EditBlogQuery(db, blogslug)
 		if err != nil {
 			return err
 		}
-		return tmpl.ExecuteTemplate(w, "editblog.html", blog)
+		return tmpl(w, "editblog.html", blog)
 	})
 }
 
 // Post handler to save updated blog data
-func UpdateBlogHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
+func UpdateBlogHandler(db *sql.DB, tmpl ExecuteTemplateFunc) http.HandlerFunc {
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
 		blogslug := mux.Vars(r)["blogslug"]
 		body := []byte(r.FormValue("body"))

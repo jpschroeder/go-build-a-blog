@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strings"
 	"time"
@@ -13,7 +12,7 @@ import (
 )
 
 // Get handler to render the edit page with existing data
-func EditPageHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
+func EditPageHandler(db *sql.DB, tmpl ExecuteTemplateFunc) http.HandlerFunc {
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
 		blogslug := mux.Vars(r)["blogslug"]
 		pageslug := mux.Vars(r)["pageslug"]
@@ -22,12 +21,12 @@ func EditPageHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 			return err
 		}
 
-		return tmpl.ExecuteTemplate(w, "editpage.html", dto)
+		return tmpl(w, "editpage.html", dto)
 	})
 }
 
 // Post handler to save updated page data
-func UpdatePageHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
+func UpdatePageHandler(db *sql.DB, tmpl ExecuteTemplateFunc) http.HandlerFunc {
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
 		blogslug := mux.Vars(r)["blogslug"]
 		pageslug := mux.Vars(r)["pageslug"]
@@ -48,7 +47,7 @@ func UpdatePageHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 		newpageslug, err := UpdatePageCommand(db, blogslug, pageslug, page)
 		if err != nil {
 			dto.Error = err.Error()
-			return tmpl.ExecuteTemplate(w, "editpage.html", dto)
+			return tmpl(w, "editpage.html", dto)
 		}
 
 		http.Redirect(w, r, fmt.Sprintf("/%s/%s", blogslug, newpageslug), http.StatusFound)

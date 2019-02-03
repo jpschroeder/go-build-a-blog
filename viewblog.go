@@ -10,7 +10,7 @@ import (
 )
 
 // Get handler to display the default blog and pages from it
-func DefaultBlogHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
+func DefaultBlogHandler(db *sql.DB, tmpl ExecuteTemplateFunc) http.HandlerFunc {
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
 		blog, err := DefaultBlogQuery(db)
 		if err != nil {
@@ -29,12 +29,12 @@ func DefaultBlogHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 			return err
 		}
 		model := BlogViewModel{Blog: blog, Pages: pages, Unlocked: unlocked}
-		return tmpl.ExecuteTemplate(w, "viewblog.html", model)
+		return tmpl(w, "viewblog.html", model)
 	})
 }
 
 // Get handler to display a specific blog and the pages from it
-func ViewBlogHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
+func ViewBlogHandler(db *sql.DB, tmpl ExecuteTemplateFunc) http.HandlerFunc {
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
 		blogslug := mux.Vars(r)["blogslug"]
 		blog, err := ViewBlogQuery(db, blogslug)
@@ -54,7 +54,7 @@ func ViewBlogHandler(db *sql.DB, tmpl *template.Template) http.HandlerFunc {
 			return err
 		}
 		model := BlogViewModel{Blog: blog, Pages: pages, Unlocked: unlocked}
-		return tmpl.ExecuteTemplate(w, "viewblog.html", model)
+		return tmpl(w, "viewblog.html", model)
 	})
 }
 

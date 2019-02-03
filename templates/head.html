@@ -36,16 +36,24 @@
 
     textarea, input[type=text], input[type=datetime-local], input[type=password] {
         font-size: 1em;
-        padding: .5em 1%;
-        margin-bottom: 1.5em;
+        padding: .5em;
+        margin-bottom: 1em;
     }
 
     textarea, input[type=text], input[type=password] {
-        width: 98%;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     textarea {
-        height: 600px;
+        flex: 1;
+        resize: none;
+    }
+
+    form {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 64px);
     }
 
     .subtitle {
