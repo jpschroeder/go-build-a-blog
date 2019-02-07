@@ -133,7 +133,7 @@ func registerRoutes(db *sql.DB, tmpl ExecuteTemplateFunc, devmode bool) *mux.Rou
 
 	r.HandleFunc(blogSlug, ViewBlogHandler(db, tmpl)).Methods("GET")
 
-	r.HandleFunc(blogSlug+"/unlock", UnlockBlogHandler(tmpl)).Methods("GET")
+	r.HandleFunc(blogSlug+"/unlock", UnlockBlogHandler(db, tmpl)).Methods("GET")
 	r.HandleFunc(blogSlug+"/unlock", DoUnlockBlogHandler(db, tmpl)).Methods("POST")
 	r.HandleFunc(blogSlug+"/lock", LockBlogHandler(db)).Methods("GET")
 

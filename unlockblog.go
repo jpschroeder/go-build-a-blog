@@ -20,9 +20,16 @@ type UnlockBlogDto struct {
 }
 
 // Get http handler to render the unlock page
-func UnlockBlogHandler(tmpl ExecuteTemplateFunc) http.HandlerFunc {
+func UnlockBlogHandler(db *sql.DB, tmpl ExecuteTemplateFunc) http.HandlerFunc {
 	return handleErrors(func(w http.ResponseWriter, r *http.Request) error {
 		blogslug := mux.Vars(r)["blogslug"]
+
+		unlocked := IsUnlocked(db, w, r, blogslug)
+		if unlocked {
+			http.Redirect(w, r, fmt.Sprintf("/%s", blogslug), http.StatusFound)
+			return nil
+		}
+
 		dto := UnlockBlogDto{BlogSlug: blogslug}
 		return tmpl(w, "unlock.html", dto)
 	})
@@ -61,7 +68,7 @@ func DoUnlockBlogHandler(db *sql.DB, tmpl ExecuteTemplateFunc) http.HandlerFunc 
 		}
 
 		// Send te session token as a browser cookie
-		http.SetCookie(w, sessionCookie(blogslug, token))
+		SetCookies(w, sessionCookies(blogslug, token))
 
 		http.Redirect(w, r, "/"+blogslug, http.StatusFound)
 		return nil
@@ -90,8 +97,24 @@ func IsUnlocked(db *sql.DB, w http.ResponseWriter, r *http.Request, blogslug str
 	RefreshSessionCommand(db, blogslug, token)
 
 	// Update the dates on the cookie
-	http.SetCookie(w, sessionCookie(blogslug, token))
+	SetCookies(w, sessionCookies(blogslug, token))
 	return true
+}
+
+// Set an array of cookies
+func SetCookies(w http.ResponseWriter, cookies []*http.Cookie) {
+	for _, c := range cookies {
+		http.SetCookie(w, c)
+	}
+}
+
+// Get session cookies for a root and sub directories
+func sessionCookies(blogslug string, token string) []*http.Cookie {
+	root := sessionCookie(blogslug, token)
+	root.Path = fmt.Sprintf("/%s", blogslug)
+	sub := sessionCookie(blogslug, token)
+	sub.Path = fmt.Sprintf("/%s/", blogslug)
+	return []*http.Cookie{root, sub}
 }
 
 // Get a session cookie from a token
@@ -99,7 +122,6 @@ func sessionCookie(blogslug string, token string) *http.Cookie {
 	return &http.Cookie{
 		Name:    cookieName(blogslug),
 		Value:   token,
-		Path:    "/",
 		Expires: time.Now().AddDate(0, 0, sessionTimeoutDays),
 	}
 }

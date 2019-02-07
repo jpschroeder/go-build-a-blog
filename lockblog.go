@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -27,11 +28,20 @@ func LockBlogHandler(db *sql.DB) http.HandlerFunc {
 		RemoveSessionCommand(db, blogslug, token)
 
 		// Expire the session cookie
-		http.SetCookie(w, clearCookie(blogslug))
+		SetCookies(w, clearCookies(blogslug))
 
 		http.Redirect(w, r, "/"+blogslug, http.StatusFound)
 		return nil
 	})
+}
+
+// Get clear session cookies for a root and sub directories
+func clearCookies(blogslug string) []*http.Cookie {
+	root := clearCookie(blogslug)
+	root.Path = fmt.Sprintf("/%s", blogslug)
+	sub := clearCookie(blogslug)
+	sub.Path = fmt.Sprintf("/%s/", blogslug)
+	return []*http.Cookie{root, sub}
 }
 
 // The expired cookie value that will clear the cookie from the users browser
@@ -39,7 +49,6 @@ func clearCookie(blogslug string) *http.Cookie {
 	return &http.Cookie{
 		Name:    cookieName(blogslug),
 		Value:   "",
-		Path:    "/",
 		Expires: time.Unix(0, 0),
 	}
 }
