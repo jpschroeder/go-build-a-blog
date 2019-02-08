@@ -3,21 +3,19 @@
 {{ template "head.html" .Blog.Title}}
 <body>
 
+<div class="right">
+    {{if .Unlocked}}
+    <a href="/{{.Blog.BlogSlug}}/add">add post</a>
+    | <a href="/{{.Blog.BlogSlug}}/edit">customize</a>
+    | <a href="/{{.Blog.BlogSlug}}/lock">lock</a>
+    {{end}}
+</div>
+
 <h1>{{.Blog.Title}}</h1>
 
 <div>{{.Blog.Html}}</div>
 
 <hr>
-
-<div class="right">
-    {{if .Unlocked}}
-    <a href="/{{.Blog.BlogSlug}}/add">add</a>
-    | <a href="/{{.Blog.BlogSlug}}/edit">edit</a>
-    | <a href="/{{.Blog.BlogSlug}}/lock">lock</a>
-    {{else}}
-    <a href="/{{.Blog.BlogSlug}}/unlock">unlock</a>
-    {{end}}
-</div>
 
 {{ range $index, $page := .Pages }}
     <h2><a href="/{{$.Blog.BlogSlug}}/{{$page.PageSlug}}">{{ $page.Title }}</a></h2>
@@ -25,6 +23,12 @@
         {{ $page.FormattedDate }}
         {{if not $page.Show}} (hidden) {{end}}
     </p>
+{{ end }}
+
+{{ if not .Unlocked }}
+<div class="right">
+    <a href="/{{.Blog.BlogSlug}}/unlock">unlock</a>
+</div>
 {{ end }}
 
 </body>
