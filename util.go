@@ -17,8 +17,7 @@ import (
 )
 
 const (
-	dateFormat     = "2006-01-02"
-	dateTimeFormat = "2006-01-02T15:04"
+	dateFormat = "2006-01-02"
 )
 
 // Generate a cryptographic password hash
@@ -73,13 +72,10 @@ type Page struct {
 func (p Page) FormattedDate() string {
 	return p.Date.Format(dateFormat)
 }
-func (p Page) FormattedDateTime() string {
-	return p.Date.Format(dateTimeFormat)
-}
 
 // Parse form values into a page object
 func parseForm(r *http.Request) (*Page, error) {
-	date, err := time.Parse(dateTimeFormat, r.FormValue("date"))
+	date, err := time.Parse(dateFormat, r.FormValue("date"))
 	if err != nil {
 		return nil, err
 	}

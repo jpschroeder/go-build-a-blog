@@ -57,24 +57,24 @@ func UpdatePageHandler(db *sql.DB, tmpl ExecuteTemplateFunc) http.HandlerFunc {
 
 // Model used to populate the edit page
 type EditPageDto struct {
-	Title             string
-	FormattedDateTime string
-	Show              bool
-	Body              []byte
-	BlogSlug          string
-	PageSlug          string
-	Error             string
+	Title         string
+	FormattedDate string
+	Show          bool
+	Body          []byte
+	BlogSlug      string
+	PageSlug      string
+	Error         string
 }
 
 // Generate the Edit page dto
 func MapEditPageDto(page *Page, blogslug string, pageslug string) EditPageDto {
 	return EditPageDto{
-		Title:             page.Title,
-		FormattedDateTime: page.FormattedDateTime(),
-		Show:              page.Show,
-		Body:              page.Body,
-		BlogSlug:          blogslug,
-		PageSlug:          pageslug}
+		Title:         page.Title,
+		FormattedDate: page.FormattedDate(),
+		Show:          page.Show,
+		Body:          page.Body,
+		BlogSlug:      blogslug,
+		PageSlug:      pageslug}
 }
 
 // Get the full page data from the database
@@ -95,12 +95,12 @@ func EditPageQuery(db *sql.DB, blogslug string, pageslug string) (*EditPageDto, 
 		return nil, err
 	}
 	return &EditPageDto{
-		FormattedDateTime: date.Format(dateTimeFormat),
-		Title:             title,
-		Show:              show,
-		Body:              body,
-		BlogSlug:          blogslug,
-		PageSlug:          pageslug,
+		FormattedDate: date.Format(dateFormat),
+		Title:         title,
+		Show:          show,
+		Body:          body,
+		BlogSlug:      blogslug,
+		PageSlug:      pageslug,
 	}, nil
 }
 

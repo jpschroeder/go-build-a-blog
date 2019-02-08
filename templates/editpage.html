@@ -14,7 +14,7 @@
 
 <form method="POST">
     <div>
-        <input type="datetime-local" name="date" value="{{.FormattedDateTime}}" />
+        <input type="date" name="date" value="{{.FormattedDate}}" />
         <input type="checkbox" name="show" {{if .Show}}checked="checked"{{end}} value="1" /> Show Listing
     </div>
     <textarea name="body" placeholder="Body" id="body">{{printf "%s" .Body}}</textarea>
