@@ -11,6 +11,7 @@ require (
 	github.com/microcosm-cc/bluemonday v1.0.2
 	github.com/shuLhan/go-bindata v3.4.0+incompatible // indirect
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
+	github.com/writeas/go-strip-markdown v2.0.1+incompatible
 	golang.org/x/crypto v0.0.0-20181203042331-505ab145d0a9
 	golang.org/x/text v0.3.0 // indirect
 	gopkg.in/russross/blackfriday.v2 v2.0.0

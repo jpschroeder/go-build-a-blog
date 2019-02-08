@@ -1,14 +1,17 @@
 package main
 
 import (
+	"bufio"
 	"log"
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/Depado/bfchroma"
 	"github.com/avelino/slugify"
 	"github.com/microcosm-cc/bluemonday"
+	stripmd "github.com/writeas/go-strip-markdown"
 	"golang.org/x/crypto/bcrypt"
 	blackfriday "gopkg.in/russross/blackfriday.v2"
 )
@@ -80,11 +83,50 @@ func parseForm(r *http.Request) (*Page, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	body := r.FormValue("body")
+	//summary := lineNum(body, 1)
+
 	return &Page{
 		Date:  date,
-		Title: r.FormValue("title"),
-		Body:  []byte(r.FormValue("body")),
+		Title: parseTitle(body),
+		Body:  []byte(body),
 		Show:  r.FormValue("show") == "1"}, nil
+}
+
+// Parse the title from the markdown body
+func parseTitle(body string) string {
+	plain := stripmd.Strip(body)
+	title := lineNum(plain, 0)
+	return truncate(title, 80)
+}
+
+// Get the 0-indexed non-empty line number
+func lineNum(in string, num int) string {
+	scanner := bufio.NewScanner(strings.NewReader(in))
+	i := 0
+	line := in
+	for scanner.Scan() {
+		line = scanner.Text()
+		line = strings.TrimSpace(line)
+		if len(line) < 1 {
+			continue
+		}
+
+		if i == num {
+			return line
+		}
+		i++
+	}
+	return ""
+}
+
+// Truncate a string to num of characters
+func truncate(str string, num int) string {
+	if len(str) <= num {
+		return str
+	}
+	return str[0:num]
 }
 
 // An http handler function that returns an error

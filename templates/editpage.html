@@ -13,7 +13,6 @@
 </div>
 
 <form method="POST">
-    <input type="text" name="title" value="{{.Title}}" placeholder="Title" />
     <div>
         <input type="datetime-local" name="date" value="{{.FormattedDateTime}}" />
         <input type="checkbox" name="show" {{if .Show}}checked="checked"{{end}} value="1" /> Show Listing
