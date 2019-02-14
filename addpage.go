@@ -53,11 +53,14 @@ func CreatePageHandler(db *sql.DB, tmpl ExecuteTemplateFunc) http.HandlerFunc {
 // Insert a new page into the database
 func CreatePageCommand(db *sql.DB, blogslug string, p *Page) (string, error) {
 	sql := `
-		insert into pages(BlogSlug, PageSlug, Date, Show, Title, Body, Html) values(?, ?, ?, ?, ?, ?, ?)
+		insert into pages(BlogSlug, PageSlug, Date, Show, Title, Body, Html, Summary) 
+		values(?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`
 	pageslug := makeSlug(p.Title)
 	html := parseMarkdown(p.Body)
-	_, err := db.Exec(sql, blogslug, pageslug, p.Date, p.Show, p.Title, p.Body, html)
+	summary := lineNum(string(p.Body), 1)
+	summaryHtml := string(parseMarkdown([]byte(summary)))
+	_, err := db.Exec(sql, blogslug, pageslug, p.Date, p.Show, p.Title, p.Body, html, summaryHtml)
 	if err != nil {
 		if strings.HasPrefix(err.Error(), "UNIQUE constraint failed") {
 			err = errors.New("There is already a page with this title")

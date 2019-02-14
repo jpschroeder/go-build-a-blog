@@ -108,12 +108,14 @@ func EditPageQuery(db *sql.DB, blogslug string, pageslug string) (*EditPageDto, 
 func UpdatePageCommand(db *sql.DB, blogslug string, oldpageslug string, p *Page) (string, error) {
 	sql := `
 		update pages
-		set PageSlug = ?, Date = ?, Show = ?, Title = ?, Body = ?, Html = ?
+		set PageSlug = ?, Date = ?, Show = ?, Title = ?, Body = ?, Html = ?, Summary = ?
 		where BlogSlug = ? and PageSlug = ?
 	`
 	newpageslug := makeSlug(p.Title)
 	html := parseMarkdown(p.Body)
-	_, err := db.Exec(sql, newpageslug, p.Date, p.Show, p.Title, p.Body, html, blogslug, oldpageslug)
+	summary := lineNum(string(p.Body), 1)
+	summaryHtml := string(parseMarkdown([]byte(summary)))
+	_, err := db.Exec(sql, newpageslug, p.Date, p.Show, p.Title, p.Body, html, summaryHtml, blogslug, oldpageslug)
 	if err != nil {
 		if strings.HasPrefix(err.Error(), "UNIQUE constraint failed") {
 			err = errors.New("There is already a page with this title")

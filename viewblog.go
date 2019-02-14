@@ -70,6 +70,7 @@ type PageListing struct {
 	Title    string
 	Date     time.Time
 	Show     bool
+	Summary  template.HTML
 }
 
 func (p PageListing) FormattedDate() string {
@@ -79,7 +80,7 @@ func (p PageListing) FormattedDate() string {
 // Query the database for the list of all visible page titles and metadata
 func ListVisiblePagesQuery(db *sql.DB, blogslug string) ([]PageListing, error) {
 	sql := `
-		select PageSlug, Title, Date, Show from pages 
+		select PageSlug, Title, Date, Show, Summary from pages 
 		where Show = 1 and BlogSlug = ? order by Date desc
 	`
 	rows, err := db.Query(sql, blogslug)
@@ -89,7 +90,7 @@ func ListVisiblePagesQuery(db *sql.DB, blogslug string) ([]PageListing, error) {
 // Query the database for the list of all page titles and metadata
 func ListAllPagesQuery(db *sql.DB, blogslug string) ([]PageListing, error) {
 	sql := `
-		select PageSlug, Title, Date, Show from pages 
+		select PageSlug, Title, Date, Show, Summary from pages 
 		where BlogSlug = ? order by Date desc
 	`
 	rows, err := db.Query(sql, blogslug)
@@ -109,11 +110,18 @@ func ParsePagesResult(rows *sql.Rows, err error) ([]PageListing, error) {
 		var title string
 		var date time.Time
 		var show bool
-		err = rows.Scan(&pageslug, &title, &date, &show)
+		var summary string
+		err = rows.Scan(&pageslug, &title, &date, &show, &summary)
 		if err != nil {
 			return ret, err
 		}
-		ret = append(ret, PageListing{PageSlug: pageslug, Title: title, Date: date, Show: show})
+		ret = append(ret, PageListing{
+			PageSlug: pageslug,
+			Title:    title,
+			Date:     date,
+			Show:     show,
+			Summary:  template.HTML(summary),
+		})
 	}
 	return ret, rows.Err()
 }

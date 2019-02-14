@@ -18,11 +18,14 @@
 <hr>
 
 {{ range $index, $page := .Pages }}
-    <h2><a href="/{{$.Blog.BlogSlug}}/{{$page.PageSlug}}">{{ $page.Title }}</a></h2>
+    <h2 class="title"><a href="/{{$.Blog.BlogSlug}}/{{$page.PageSlug}}">{{ $page.Title }}</a></h2>
     <p class="subtitle">
         {{ $page.FormattedDate }}
         {{if not $page.Show}} (hidden) {{end}}
     </p>
+    {{ if $page.Summary }}
+    <div class="summary">{{ $page.Summary }}</div>
+    {{ end }}
 {{ end }}
 
 {{ if not .Unlocked }}

@@ -105,6 +105,13 @@ func createSchema(db *sql.DB) error {
 		);
 	`
 	_, err := db.Exec(sql)
+
+	sql = `
+		alter table pages add column Summary varchar(512) not null default "";
+	`
+	// ignore any errors that come out of this script (columns already exist)
+	db.Exec(sql)
+
 	return err
 }
 
