@@ -25,6 +25,7 @@
     </p>
     {{ if $page.Summary }}
     <div class="summary">{{ $page.Summary }}</div>
+    <div class="summary"><a href="/{{$.Blog.BlogSlug}}/{{$page.PageSlug}}">read more</a></div>
     {{ end }}
 {{ end }}
 
