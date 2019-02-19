@@ -1,6 +1,6 @@
 package main
 
-//go:generate go-bindata -ignore=src templates/... static/...
+//go:generate go-bindata templates/... static/...
 
 import (
 	"crypto/tls"

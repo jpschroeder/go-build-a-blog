@@ -2,6 +2,17 @@
 <html lang="en">
 {{ template "head.html" .Title}}
 <link rel="stylesheet" href="/static/codemirror-bundle.css">
+<style>
+    textarea, .CodeMirror {
+        height: calc(100vh - 180px);
+    }
+    body {
+        padding-bottom: 0;
+    }
+    input[type="submit"], input[type="date"], form {
+        margin-bottom: 0;
+    }
+</style>
 <body>
 
 <div class="right">
@@ -11,7 +22,7 @@
 <form method="POST">
     <h1>{{.Title}}</h1>
     <textarea name="body" placeholder="Body" id="body">{{printf "%s" .Body}}</textarea>
-    <div class="right"><a href="#" id="syntaxtoggle">syntax off</a></div>
+    <div class="float-right"><a href="#" id="syntaxtoggle">syntax off</a></div>
 
 	<div><input type="submit" value="Save" /></div>
 </form>

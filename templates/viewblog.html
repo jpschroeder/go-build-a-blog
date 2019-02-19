@@ -1,6 +1,21 @@
 <!doctype html>
 <html lang="en">
 {{ template "head.html" .Blog.Title}}
+<style>
+    .listing {
+        padding-top: 1em;
+        padding-bottom: 1em;
+    }
+
+    .listing > h2 > a {
+        color: black;
+    }
+
+    .listing * {
+        margin-bottom: 0.2em;
+        margin-top: 0.2em;
+    }
+</style>
 <body>
 
 <div class="right">
@@ -18,15 +33,17 @@
 <hr>
 
 {{ range $index, $page := .Pages }}
-    <h2 class="title"><a href="/{{$.Blog.BlogSlug}}/{{$page.PageSlug}}">{{ $page.Title }}</a></h2>
-    <p class="subtitle">
-        {{ $page.FormattedDate }}
-        {{if not $page.Show}} (hidden) {{end}}
-    </p>
-    {{ if $page.Summary }}
-    <div class="summary">{{ $page.Summary }}</div>
-    <div class="summary"><a href="/{{$.Blog.BlogSlug}}/{{$page.PageSlug}}">read more</a></div>
-    {{ end }}
+    <section class="listing">
+        <h2><a href="/{{$.Blog.BlogSlug}}/{{$page.PageSlug}}">{{ $page.Title }}</a></h2>
+        <code>
+            {{ $page.FormattedDate }}
+            {{if not $page.Show}} (hidden) {{end}}
+        </code>
+        {{ if $page.Summary }}
+        <div>{{ $page.Summary }}</div>
+        <div><a href="/{{$.Blog.BlogSlug}}/{{$page.PageSlug}}">read more</a></div>
+        {{ end }}
+    </section>
 {{ end }}
 
 {{ if not .Unlocked }}

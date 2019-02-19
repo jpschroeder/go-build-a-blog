@@ -17,6 +17,7 @@ type ExecuteTemplateFunc func(wr io.Writer, name string, data interface{}) error
 // Parse all of the html templates from the executable bundle so that they can be rendered with data
 func parseBundledTemplates() (ExecuteTemplateFunc, error) {
 	templates := []string{
+		"nodesign.min.css",
 		"head.html",
 		"deletepage.html",
 		"editblog.html",

@@ -1,6 +1,5 @@
 .CodeMirror {
-    flex: 1;
-    margin-bottom: 1em;
+    margin-bottom: 1.5em;
     border: 1px solid rgb(169, 169, 169);
     padding: .2em;
     line-height: normal;

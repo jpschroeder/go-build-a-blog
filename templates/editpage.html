@@ -2,6 +2,18 @@
 <html lang="en">
 {{ template "head.html" .Title}}
 <link rel="stylesheet" href="/static/codemirror-bundle.css">
+<style>
+    textarea, .CodeMirror {
+        height: calc(100vh - 140px);
+        margin-top: 0.75em;
+    }
+    body {
+        padding-bottom: 0;
+    }
+    input[type="submit"], input[type="date"], form {
+        margin-bottom: 0;
+    }
+</style>
 <body>
 
 <div class="right">
@@ -13,18 +25,30 @@
 </div>
 
 <form method="POST">
-    <div>
-        <input type="date" name="date" value="{{.FormattedDate}}" />
-        <input type="checkbox" name="show" {{if .Show}}checked="checked"{{end}} value="1" /> Show Listing
-    </div>
     <textarea name="body" placeholder="Body" id="body">{{printf "%s" .Body}}</textarea>
-    <div class="right"><a href="#" id="syntaxtoggle">syntax off</a></div>
     
     {{if .Error}}
     <div class="error">{{.Error}}</div>
     {{end}}
 
-	<div><input type="submit" value="Save" /></div>
+    <div class="row">
+        <div class="col">
+            <input type="checkbox" name="show" {{if .Show}}checked="checked"{{end}} value="1" /> Show Listing
+        </div>
+        <div class="col">
+            <div class="float-right">
+                <a href="#" id="syntaxtoggle">syntax off</a>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <input type="date" name="date" value="{{.FormattedDate}}" />
+        </div>
+        <div class="col">
+            <div class="float-right"><input type="submit" value="Save" /></div>
+        </div>
+    </div>
 </form>
 
 <script src="/static/codemirror-bundle.js"></script>

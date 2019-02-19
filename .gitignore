@@ -30,4 +30,4 @@ debug
 /go-build-a-blog
 
 # Exclude unbundled static sources
-/static/src
+/static_src
