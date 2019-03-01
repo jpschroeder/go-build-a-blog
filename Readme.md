@@ -81,7 +81,7 @@ See standard output/error with: `journalctl -f -u go-build-a-blog`
 
 ### nginx
 
-You can also use nginx to proxy connections to the go application.
+You can host the application using go directly, or you can listen on a local port and use nginx to proxy connections to the app.
 
 Make sure that nginx is installed with: `apt-get install nginx`
 
@@ -92,6 +92,21 @@ Remove the default website configuration: `rm /etc/nginx/sites-enabled/default`
 Enable the go proxy: `ln -s /etc/nginx/sites-available/go-build-a-blog.nginx.conf /etc/nginx/sites-enabled/go-build-a-blog.nginx.conf`
 
 Restart nginx to pick up the changes: `systemctl restart nginx`
+
+## nginx https
+
+If running as a stand-alone go application, you can use the built-in https support.  When running behind a proxy, you should enable https in nginx and forward to the localhost http address.
+
+Install the letsencrypt client with: 
+
+```shell
+add-apt-repository ppa:certbot/certbot
+apt-get install python-certbot-nginx
+```
+
+Generate and install a certificate with: `certbot --nginx -d blog.mysite.com`
+
+The certificate should auto-renew when necessary.
 
 ## credits
 
