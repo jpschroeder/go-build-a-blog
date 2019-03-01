@@ -6,7 +6,10 @@ Type=simple
 Restart=always
 RestartSec=5s
 WorkingDirectory=/root/data/go-build-a-blog
-ExecStart=/root/data/go-build-a-blog/go-build-a-blog -httpaddr :80 -httpsaddr :443 -httpsdomain blog.mysite.com
+# hosting using golang directly
+# ExecStart=/root/data/go-build-a-blog/go-build-a-blog -httpaddr :80 -httpsaddr :443 -httpsdomain blog.mysite.com
+# proxying from nginx
+ExecStart=/root/data/go-build-a-blog/go-build-a-blog -httpaddr localhost:8080 
 
 [Install]
 WantedBy=multi-user.target

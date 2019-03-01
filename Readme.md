@@ -79,6 +79,20 @@ Enable it on boot with: `systemctl enable go-build-a-blog`
 Check it's status with: `systemctl status go-build-a-blog`  
 See standard output/error with: `journalctl -f -u go-build-a-blog`
 
+### nginx
+
+You can also use nginx to proxy connections to the go application.
+
+Make sure that nginx is installed with: `apt-get install nginx`
+
+Customize `go-build-a-blog.nginx.conf` and copy it to `/etc/nginx/sites-available/go-build-a-blog.nginx.conf`
+
+Remove the default website configuration: `rm /etc/nginx/sites-enabled/default`
+
+Enable the go proxy: `ln -s /etc/nginx/sites-available/go-build-a-blog.nginx.conf /etc/nginx/sites-enabled/go-build-a-blog.nginx.conf`
+
+Restart nginx to pick up the changes: `systemctl restart nginx`
+
 ## credits
 
 - [txti](http://txti.es/) Minimalistic design inspiration
