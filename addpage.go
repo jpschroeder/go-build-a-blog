@@ -54,7 +54,7 @@ func CreatePageHandler(db *sql.DB, tmpl ExecuteTemplateFunc) http.HandlerFunc {
 func CreatePageCommand(db *sql.DB, blogslug string, p *Page) (string, error) {
 	sql := `
 		insert into pages(BlogSlug, PageSlug, Date, Show, Title, Body, Html, Summary) 
-		values(?, ?, ?, ?, ?, ?, ?, ?, ?)
+		values(?, ?, ?, ?, ?, ?, ?, ?)
 	`
 	pageslug := makeSlug(p.Title)
 	html := parseMarkdown(p.Body)
