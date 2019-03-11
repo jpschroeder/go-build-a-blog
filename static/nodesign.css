@@ -45,6 +45,10 @@ hr {
     border-top: 1px solid #c0c0c0;
 }
 
+img {
+    width: 100%;
+}
+
 /* Utility */
 
 .clearfix:after {
