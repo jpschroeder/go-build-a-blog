@@ -71,6 +71,10 @@ hr {
 
 /* Spacing */
 
+h1 {
+    margin-top: 0px;
+}
+
 button,
 dd,
 dt,
