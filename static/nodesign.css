@@ -76,9 +76,6 @@ img {
 /* Spacing */
 
 button,
-dd,
-dt,
-li,
 fieldset,
 input,
 select,
@@ -193,7 +190,6 @@ ul ul {
 
 dl, ol, ul {
     padding-left: 0;
-    line-height: 0.5em;
 }
 
 ul, ol {
