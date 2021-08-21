@@ -1,7 +1,5 @@
 package main
 
-//go:generate go-bindata templates/... static/...
-
 import (
 	"crypto/tls"
 	"flag"

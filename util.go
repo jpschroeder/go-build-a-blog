@@ -11,9 +11,9 @@ import (
 	"github.com/Depado/bfchroma"
 	"github.com/avelino/slugify"
 	"github.com/microcosm-cc/bluemonday"
+	blackfriday "github.com/russross/blackfriday/v2"
 	stripmd "github.com/writeas/go-strip-markdown"
 	"golang.org/x/crypto/bcrypt"
-	blackfriday "gopkg.in/russross/blackfriday.v2"
 )
 
 const (
